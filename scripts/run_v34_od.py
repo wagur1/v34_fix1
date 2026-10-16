@@ -199,6 +199,7 @@ def run_benchmark(args):
                 for qp in cfg["qps"]:
                     codec = codec_factory("od", codec_name, qp, cfg)
                     packets = {}
+                    detections = {}
                     def encode(action):
                         if action not in packets:
                             pixels = filter_clip(r.rgb, maps, ACTIONS[action])
@@ -239,7 +240,10 @@ def run_benchmark(args):
                         })
 
                     for arm, (action, packet, details) in arms.items():
-                        pred = detector.predict(packet.decoded)
+                        key = hashlib.sha256(packet.decoded.tobytes()).hexdigest()
+                        if key not in detections:
+                            detections[key] = detector.predict(packet.decoded)
+                        pred = detections[key]
                         coco_preds = coco_predictions(pred, r.item, r.geometry)
                         bpp = packet.coded_bytes * 8 / np.prod(r.rgb.shape[:3])
                         rows.append(dict(

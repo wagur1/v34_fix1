@@ -47,13 +47,14 @@ def kaggle_call(arguments, pool, account):
     return safe_output
 
 
-def build_notebook_script(commit: str, slug: str) -> str:
+def build_notebook_script(commit: str, slug: str, counts: dict) -> str:
     return f'''import os, pathlib, shutil, subprocess, sys, tarfile, time
 
 WORK = pathlib.Path('/kaggle/working')
 INPUT = pathlib.Path('/kaggle/input')
 REPO = WORK / 'v34_fix1'
 SLUG = {repr(slug)}
+COUNTS = {counts!r}
 OUT = WORK / 'outputs' / SLUG
 OUT.mkdir(parents=True, exist_ok=True)
 os.environ.update(PYTHONUNBUFFERED='1', OMP_NUM_THREADS='2', OPENBLAS_NUM_THREADS='2', PYTHONPATH=str(REPO))
@@ -88,10 +89,10 @@ cmd([
     '--annotations', ann_file,
     '--config', str(REPO / 'configs' / 'v34.json'),
     '--out', str(OUT),
-    '--train-count', '48',
-    '--cal-count', '16',
-    '--dev-count', '16',
-    '--test-count', '64',
+    '--train-count', str(COUNTS['train']),
+    '--cal-count', str(COUNTS['cal']),
+    '--dev-count', str(COUNTS['dev']),
+    '--test-count', str(COUNTS['test']),
     '--device', 'cuda'
 ], cwd=str(REPO))
 
@@ -110,10 +111,10 @@ print(f"Archive written to {{tgz_path}}", flush=True)
 '''
 
 
-def prepare_and_submit(account: str, slug: str, pool_path: Path, commit: str):
+def prepare_and_submit(account: str, slug: str, pool_path: Path, commit: str, counts: dict):
     payload_dir = ROOT / "outputs" / "kaggle" / slug
     payload_dir.mkdir(parents=True, exist_ok=True)
-    script_source = build_notebook_script(commit, slug)
+    script_source = build_notebook_script(commit, slug, counts)
     notebook = {
         "nbformat": 4,
         "nbformat_minor": 5,
@@ -152,13 +153,18 @@ def main():
     p.add_argument("--pool", type=Path, default=Path(r"C:\Users\Wagur1\Downloads\pool (2).json"))
     p.add_argument("--commit", default="")
     p.add_argument("--destination", type=Path, default=None)
+    p.add_argument("--train-count", type=int, default=192)
+    p.add_argument("--cal-count", type=int, default=64)
+    p.add_argument("--dev-count", type=int, default=48)
+    p.add_argument("--test-count", type=int, default=256)
     args = p.parse_args()
+    counts = {"train": args.train_count, "cal": args.cal_count, "dev": args.dev_count, "test": args.test_count}
     if args.mode == "push":
         if not args.commit:
             commit = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
         else:
             commit = args.commit
-        prepare_and_submit(args.account, args.slug, args.pool, commit)
+        prepare_and_submit(args.account, args.slug, args.pool, commit, counts)
     elif args.mode == "status":
         kaggle_call(["kernels", "status", f"{args.account}/{args.slug}"], args.pool, args.account)
     else:
