@@ -21,6 +21,7 @@ credentials.json
 !checkpoints/v34_od_coco/controller_303401.pth
 !checkpoints/v34_od_coco/controller_303402.pth
 !checkpoints/v34_od_coco/controller_303403.pth
+!caches/**/*.pth
 results/v34_r1/shards/*/test_rows.json
 results/v34_od_coco/test_rows.json
 results/v34_od_coco/dev_rows.json

@@ -62,8 +62,11 @@ def infer(model,pair,c):
 
 def train_models(cache,inputs,cfg,out,device,task_models):
     validate_cache(cache); fit=[r for r in cache['rows'] if r['split']=='train']; cal=[r for r in cache['rows'] if r['split']=='cal']; models=[]
+    if cfg.get('damage_units')=='relative':
+        from .learning import relative_damage
+        fit=relative_damage(fit,cfg.get('damage_floor')); cal=relative_damage(cal,cfg.get('damage_floor'))
     from .learning import targets
-    choices=[targets(r['rate'],np.array(r['damage'],float),r['mask'],cfg['damage_tolerance'],cfg['budget_ratio']) for r in fit]
+    choices=[targets(r['rate'],np.array(r['damage'],float),r['mask'],cfg['damage_tolerance'],cfg['budget_ratio'],cfg.get('oracle_damage_weight')) for r in fit]
     write_json(out/'train_oracle.json',dict(scope='TRAIN constrained measured oracle; never deployed TEST GT selection',
         count=len(choices),action_counts={str(a):choices.count(a) for a in range(len(ACTIONS))},
         records=[dict(id=r['id'],codec=r.get('codec'),qp=r.get('qp'),action=a) for r,a in zip(fit,choices)]))

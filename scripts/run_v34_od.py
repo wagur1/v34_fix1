@@ -26,7 +26,7 @@ from adaptive_vcm.v33ap.evaluate import inverse_boxes, safe_curve
 from adaptive_vcm.v34.protocol import ACTIONS, settings, digest, codec_factory
 from adaptive_vcm.v34.preprocessing import region_maps, filter_clip
 from adaptive_vcm.v34.model import Controller
-from adaptive_vcm.v34.learning import targets, train_controller, calibrate, select_action
+from adaptive_vcm.v34.learning import targets, train_controller, calibrate, select_action, relative_damage
 from adaptive_vcm.v34.checkpoint import save_checkpoint, load_checkpoint
 from adaptive_vcm.v34.runner import input_pair, condition, measure_candidates, infer, write_json
 from adaptive_vcm.v34.tasks import Heads
@@ -44,6 +44,10 @@ def parse_args():
     p.add_argument("--dev-count", type=int, default=16)
     p.add_argument("--test-count", type=int, default=64)
     p.add_argument("--device", default=None)
+    p.add_argument("--fresh", action="store_true",
+                   help="Ignore an existing measurements.json and re-measure candidates")
+    p.add_argument("--retrain", action="store_true",
+                   help="Retrain controllers even when checkpoints already exist")
     p.add_argument("--frozen-checkpoint", default="checkpoints/v34_r1/controller_303401.pth",
                    help="Path to frozen V34-R1 checkpoint")
     return p.parse_args()
@@ -72,6 +76,38 @@ def load_cohorts(od_root: Path, annotations_path: Path, cfg: dict):
             r.split = split
             groups[split].append(r)
     return groups, meta
+
+
+def train_od_models(fit_rows, cal_rows, inputs, cfg, out, device, task_models):
+    print(f"Training V34 controller models ({len(cfg['seeds'])} seeds)...", flush=True)
+    choices = [targets(r["rate"], np.array(r["damage"], float), r["mask"], cfg["damage_tolerance"],
+                       cfg["budget_ratio"], cfg.get("oracle_damage_weight")) for r in fit_rows]
+    write_json(out / "train_oracle.json", dict(
+        scope="TRAIN measured oracle", count=len(choices),
+        action_counts={str(a): choices.count(a) for a in range(len(ACTIONS))}
+    ))
+    models = []
+    cond_len = 9 if cfg.get("domain_condition") else 6
+    for seed in cfg["seeds"]:
+        torch.manual_seed(seed); np.random.seed(seed)
+        model = Controller(len(ACTIONS), conditions=cond_len, task_logits=cfg.get("task_logits", False))
+        history = train_controller(model, fit_rows, inputs, cfg, device)
+        pred = [infer(model, inputs[r["id"]], r["condition"]) for r in cal_rows]
+        actual = np.array([r["damage"] for r in cal_rows], float)
+        calibration = calibrate(
+            np.array([p["risk"] for p in pred]), actual,
+            np.array([p["rate"] for p in pred]), np.array([r["rate"] for r in cal_rows]),
+            np.array([r["mask"] for r in cal_rows], bool), cfg["cal_coverage"]
+        )
+        meta_dict = dict(seed=seed, settings=cfg, actions=[list(a) for a in ACTIONS],
+                         experiment="ar_od", task_models=task_models, calibration=calibration,
+                         checkpoint_role="LAST", training_history=history)
+        path = out / f"controller_{seed}.pth"
+        save_checkpoint(path, model, meta_dict)
+        models.append(load_checkpoint(path, device))
+        write_json(out / f"training_{seed}.json", meta_dict)
+        print(f"  Model seed {seed} trained and calibrated.", flush=True)
+    return models
 
 
 def run_benchmark(args):
@@ -111,17 +147,28 @@ def run_benchmark(args):
         except Exception as e:
             print(f"Notice: could not load frozen checkpoint ({e})", flush=True)
 
-    # 3. Source features & Candidate Measurements
+    # 3. Candidate measurement cache (reusable across units/loss variants) then training
     models = []
     inputs = {}
     meas_file = out / "measurements.json"
-    all_ckpts = all((out / f"controller_{seed}.pth").is_file() for seed in cfg["seeds"])
-
-    if meas_file.is_file() and all_ckpts:
-        print(f"Reusing existing candidate measurements and checkpoints from {out}...", flush=True)
-        for seed in cfg["seeds"]:
-            models.append(load_checkpoint(out / f"controller_{seed}.pth", device))
-            print(f"  Loaded controller_{seed}.pth", flush=True)
+    if meas_file.is_file() and not args.fresh:
+        print(f"Reusing candidate measurements from {meas_file} (no re-encoding)...", flush=True)
+        cache = json.loads(meas_file.read_text(encoding="utf-8"))
+        stored = cache.get("settings", {})
+        for key in ("train_count", "cal_count", "qps", "codecs", "od_size"):
+            if key in stored and stored[key] != cfg[key]:
+                raise ValueError(f"measurement cache mismatch on {key} ({stored[key]} != {cfg[key]}); rerun with --fresh")
+        inputs_file = out / "controller_inputs.pth"
+        if inputs_file.is_file():
+            inputs = torch.load(inputs_file, map_location="cpu", weights_only=True)
+        else:
+            # V34-R1 never shipped controller_inputs.pth; rebuilding only needs the
+            # frozen detector on the source images, not the codec roundtrips.
+            print("Rebuilding controller inputs from source images (detector only)...", flush=True)
+            for split in ("train", "cal"):
+                for r in groups[split]:
+                    heads.source(r)
+                    inputs[r.id] = input_pair(r.rgb, region_maps(r.rgb, r.source_predictions["od"]))
     else:
         print(f"Extracting source detection features and measuring candidate table...", flush=True)
         cache = dict(schema=cfg["schema"], experiment="ar_od", settings=cfg, actions=[list(a) for a in ACTIONS],
@@ -148,37 +195,23 @@ def run_benchmark(args):
 
         cache["sha256"] = digest({k: v for k, v in cache.items() if k != "sha256"})
         write_json(meas_file, cache)
+        torch.save(inputs, out / "controller_inputs.pth")
 
-        # 4. Train Controller models
-        print(f"Training V34 controller models (3 seeds)...", flush=True)
-        fit_rows = [r for r in cache["rows"] if r["split"] == "train"]
-        cal_rows = [r for r in cache["rows"] if r["split"] == "cal"]
-        choices = [targets(r["rate"], np.array(r["damage"], float), r["mask"], cfg["damage_tolerance"], cfg["budget_ratio"]) for r in fit_rows]
-        write_json(out / "train_oracle.json", dict(
-            scope="TRAIN measured oracle", count=len(choices),
-            action_counts={str(a): choices.count(a) for a in range(len(ACTIONS))}
-        ))
+    fit_rows = [r for r in cache["rows"] if r["split"] == "train"]
+    cal_rows = [r for r in cache["rows"] if r["split"] == "cal"]
+    if cfg.get("damage_units") == "relative":
+        # Fix2: labels, risk supervision and calibration move to relative units together.
+        fit_rows = relative_damage(fit_rows, cfg.get("damage_floor"))
+        cal_rows = relative_damage(cal_rows, cfg.get("damage_floor"))
 
-        cond_len = 9 if cfg.get("domain_condition") else 6
+    all_ckpts = all((out / f"controller_{seed}.pth").is_file() for seed in cfg["seeds"])
+    if all_ckpts and not args.retrain:
+        print(f"Reusing trained controllers from {out}...", flush=True)
         for seed in cfg["seeds"]:
-            torch.manual_seed(seed); np.random.seed(seed)
-            model = Controller(len(ACTIONS), conditions=cond_len, task_logits=cfg.get("task_logits", False))
-            history = train_controller(model, fit_rows, inputs, cfg, device)
-            pred = [infer(model, inputs[r["id"]], r["condition"]) for r in cal_rows]
-            actual = np.array([r["damage"] for r in cal_rows], float)
-            calibration = calibrate(
-                np.array([p["risk"] for p in pred]), actual,
-                np.array([p["rate"] for p in pred]), np.array([r["rate"] for r in cal_rows]),
-                np.array([r["mask"] for r in cal_rows], bool), cfg["cal_coverage"]
-            )
-            meta_dict = dict(seed=seed, settings=cfg, actions=[list(a) for a in ACTIONS],
-                             experiment="ar_od", task_models=task_models, calibration=calibration,
-                             checkpoint_role="LAST", training_history=history)
-            path = out / f"controller_{seed}.pth"
-            save_checkpoint(path, model, meta_dict)
-            models.append(load_checkpoint(path, device))
-            write_json(out / f"training_{seed}.json", meta_dict)
-            print(f"  Model seed {seed} trained and calibrated.", flush=True)
+            models.append(load_checkpoint(out / f"controller_{seed}.pth", device))
+            print(f"  Loaded controller_{seed}.pth", flush=True)
+    else:
+        models = train_od_models(fit_rows, cal_rows, inputs, cfg, out, device, task_models)
 
     # 5. Evaluate held-out DEV and TEST splits
     print(f"Evaluating DEV and TEST splits on Faster R-CNN ResNet-50...", flush=True)

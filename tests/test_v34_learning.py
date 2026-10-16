@@ -41,6 +41,7 @@ def test_three_seed_training_freezes_cal_and_roundtrips_native_metadata(tmp_path
     sources={k:{'split':s,'pixel_sha256':str(i)*64} for i,(k,s) in enumerate([('fit','train'),('cal','cal')])}
     rows=[{'id':k,'split':s,'condition':[0.,.7,0.,1.,0.,1.01],
         'mask':[0,1,0],'rate':[1.,.8,1.001],
+        'cost':[[None,2.,None],[None,2.1,None],[None,1.8,None]],
         'damage':[[None,0.,None],[None,.01,None],[None,-.1,None]]} for k,s in [('fit','train'),('cal','cal')]]
     cache={'schema':'adaptive-vcm-v34-1','experiment':'ar_od','origin':{'origin_commit':'a'*40,'bundle_sha256':'b'*64},'sources':sources,'rows':rows}
     cache['sha256']=digest(cache)

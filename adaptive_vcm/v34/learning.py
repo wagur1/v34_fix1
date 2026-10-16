@@ -4,7 +4,13 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-def targets(rate,damage,mask,tolerance,budget):
+def oracle_weights(weights):
+    if weights is None: return np.full(3,.25)
+    value=np.asarray(weights,float)
+    if value.shape!=(3,) or not (value>=0).all(): raise ValueError('nonnegative per-task oracle weights required')
+    return value
+
+def targets(rate,damage,mask,tolerance,budget,weights=None):
     rate=np.asarray(rate,float); damage=np.asarray(damage,float); mask=np.asarray(mask,bool)
     if not mask.any() or damage.shape!=(len(rate),3) or mask.shape!=(3,):
         raise ValueError('active measured task required')
@@ -12,10 +18,10 @@ def targets(rate,damage,mask,tolerance,budget):
     valid &= (damage[:,mask]<=np.asarray(tolerance)[mask]).all(1)
     if not valid[0] or abs(rate[0]-1)>1e-6 or np.max(np.abs(damage[0,mask]))>1e-6:
         raise ValueError('identity anchor missing')
-    score=rate+.25*np.nan_to_num(damage[:,mask]).mean(1)
+    score=rate+oracle_weights(weights)[mask].mean()*np.nan_to_num(damage[:,mask]).mean(1)
     return int(np.argmin(np.where(valid,score,np.inf)))
 
-def targets_per_task(rate,damage,mask,tolerance,budget):
+def targets_per_task(rate,damage,mask,tolerance,budget,weights=None):
     """One rate-aware label per active task; -1 marks tasks with no supervision.
 
     Fix1: the deployed decision combines per-task risk/rate, so each active task
@@ -25,16 +31,44 @@ def targets_per_task(rate,damage,mask,tolerance,budget):
     if damage.shape!=(len(rate),3) or mask.shape!=(3,) or not mask.any():
         raise ValueError('invalid per-task target inputs')
     labels=np.full(3,-1,np.int64)
-    tolerance=np.asarray(tolerance,float)
+    tolerance=np.asarray(tolerance,float); oracle=oracle_weights(weights)
     for task in range(3):
         if not mask[task]: continue
         valid=np.isfinite(rate)&(rate<=budget)&np.isfinite(damage[:,task])
         valid &= damage[:,task]<=tolerance[task]
         if not valid[0] or abs(rate[0]-1)>1e-6 or abs(damage[0,task])>1e-6:
             raise ValueError('identity anchor missing')
-        score=rate+.25*np.nan_to_num(damage[:,task])
+        score=rate+oracle[task]*np.nan_to_num(damage[:,task])
         labels[task]=int(np.argmin(np.where(valid,score,np.inf)))
     return labels
+
+def relative_damage(rows,floor=None):
+    """Fix2 units: damage as a fraction of the measured identity cost per row/task.
+
+    V34-R1 compared raw nat-scale damage (AR composite ~ CE + .25 KL + .1 feat,
+    OD summed detector losses) against the dimensionless tolerance 0.05, so the
+    oracle pruned nearly every non-identity action and the calibrated bound was
+    trained against the wrong unit. Rescaling each active task by that row's
+    identity cost changes labels, supervision and calibration together and makes
+    the tolerance interpretable as a fraction of the no-preprocessing cost.
+    """
+    floor=np.full(3,1e-3) if floor is None else np.asarray(floor,float)
+    if floor.shape!=(3,) or not (floor>0).all(): raise ValueError('positive per-task damage floor required')
+    result=[]
+    for r in rows:
+        if 'cost' not in r: raise ValueError('measured cost required for relative damage')
+        cost=np.asarray(r['cost'],float)
+        if not np.isfinite(cost[0][np.asarray(r['mask'],bool)]).all():
+            raise ValueError('finite identity cost required for active tasks')
+        damage=np.array([[np.nan if v is None else float(v) for v in row] for row in r['damage']],float)
+        reference=np.maximum(cost[0],floor)
+        normalized=damage/reference
+        normalized[0]=np.where(np.isfinite(damage[0]),0.,np.nan)
+        value=dict(r,damage_absolute=r['damage'],
+                   damage_reference=[None if not np.isfinite(v) else float(v) for v in reference])
+        value['damage']=[[None if not np.isfinite(v) else float(v) for v in row] for row in normalized]
+        result.append(value)
+    return result
 
 def masked_loss(prediction,target,mask,scale=None):
     active=mask[:,None,:].expand_as(prediction)
@@ -145,11 +179,11 @@ def train_controller(model,rows,inputs,cfg,device):
     rate=torch.tensor([r['rate'] for r in rows],device=device,dtype=torch.float32)
     damage=torch.tensor([[[float('nan') if v is None else v for v in a] for a in r['damage']] for r in rows],device=device,dtype=torch.float32)
     mask=torch.tensor([r['mask'] for r in rows],device=device,dtype=torch.bool)
-    labels=torch.tensor([targets(r['rate'],np.array(r['damage'],float),r['mask'],cfg['damage_tolerance'],cfg['budget_ratio']) for r in rows],device=device)
+    labels=torch.tensor([targets(r['rate'],np.array(r['damage'],float),r['mask'],cfg['damage_tolerance'],cfg['budget_ratio'],cfg.get('oracle_damage_weight')) for r in rows],device=device)
     task_weight=float(cfg.get('task_ce_weight',1.0 if getattr(model,'task_logits',False) else 0.0))
     # Fix1: per-task labels supervise each active task's own rate-aware ranking.
     if getattr(model,'task_logits',False) and task_weight:
-        labels_task=torch.as_tensor(np.stack([targets_per_task(r['rate'],np.array(r['damage'],float),r['mask'],cfg['damage_tolerance'],cfg['budget_ratio']) for r in rows]),device=device,dtype=torch.long)
+        labels_task=torch.as_tensor(np.stack([targets_per_task(r['rate'],np.array(r['damage'],float),r['mask'],cfg['damage_tolerance'],cfg['budget_ratio'],cfg.get('oracle_damage_weight')) for r in rows]),device=device,dtype=torch.long)
     else:
         labels_task=None
     if cfg.get('risk_loss')=='pinball':

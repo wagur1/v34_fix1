@@ -72,6 +72,16 @@ print("Cloned v34_fix1 at commit", {commit!r}, flush=True)
 commit_seen = subprocess.run(['git', '-C', str(REPO), 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
 print("HEAD is", commit_seen, flush=True)
 
+# Reuse a committed measurement cache when present: units/loss variants then
+# only retrain and re-evaluate (the per-candidate roundtrips are not repeated).
+cache_dir = REPO / 'caches' / 'v34_od_coco'
+if cache_dir.is_dir():
+    for name in ('measurements.json', 'controller_inputs.pth'):
+        source = cache_dir / name
+        if source.is_file():
+            shutil.copyfile(source, OUT / name)
+            print(f"Seeded output with cached {{name}}", flush=True)
+
 cmd([sys.executable, '-m', 'pip', 'install', '-q', 'pycocotools'])
 
 ann_matches = list(INPUT.rglob('instances_val2017.json'))
