@@ -223,6 +223,16 @@ class Night:
 
     def analyse(self, slug: str, with_rows: bool) -> str:
         directory = ROOT / "outputs" / "kaggle" / slug
+        if with_rows:
+            tgz_files = sorted((p for p in directory.rglob("*.tgz") if p.is_file()),
+                               key=lambda p: p.stat().st_size, reverse=True)
+            if tgz_files:
+                with tarfile.open(tgz_files[0]) as tar:
+                    size = max((m.size for m in tar.getmembers()
+                                if Path(m.name).name == "test_rows.json"), default=0)
+                if size > 900_000_000:
+                    with_rows = False
+                    self.log(f"{slug}: test_rows.json {size/1e6:.0f}MB — bỏ phần arm behavior để tiết kiệm RAM")
         command = [sys.executable, str(ROOT / "scripts" / "fix1_od_report.py"), str(directory)]
         if not with_rows:
             command.append("--no-rows")
@@ -365,6 +375,10 @@ def main():
                     target["account"] = spare_pool.pop(0)
                     night.log(f"thử lại {target['slug']} trên {target['account']}")
                     night.submit_od_variant(target, head)
+            time.sleep(10)
+            if not night.kernel_exists(night.submit_od, target):
+                target["status"] = "SUBMIT-FAILED"
+                night.log(f"{target['slug']}: không xác nhận được kernel sau khi push", to_report=True)
         submitted.append(target)
 
     # ------------------------------------------------------- stage 4: submit AR
@@ -373,11 +387,20 @@ def main():
         night.log(f"{AR['slug']}: đã submit từ trước trên {AR['account']}")
     else:
         night.log(f"submit {AR['slug']} trên {AR['account']} (K400 cleaned + COCO)")
-        night.submit_ar(AR, head)
+        if night.submit_ar(AR, head):
+            time.sleep(10)
+            if not night.kernel_exists(night.submit_ar, AR):
+                AR["status"] = "SUBMIT-FAILED"
+                night.log(f"{AR['slug']}: không xác nhận được kernel sau khi push", to_report=True)
+        else:
+            AR["status"] = "SUBMIT-FAILED"
 
     # ------------------------------------------------------ stage 5: monitoring
     night.section("5. Theo dõi + tải + phân tích")
     for target in submitted:
+        if target.get("status") == "SUBMIT-FAILED":
+            continue
+
         def make_on_error(spare_pool=spare_pool, target=target):
             state = {"used": False}
 
@@ -411,7 +434,7 @@ def main():
                 except Exception as error:
                     night.note(f"### {target['slug']}\n\nphân tích lỗi: {error}")
     # AR last (its output is larger)
-    if AR.get("status") not in ("COMPLETE",):
+    if AR.get("status") not in ("COMPLETE", "SUBMIT-FAILED"):
         status = night.wait_single(AR, night.submit_ar, args.later_hours, poll_minutes=args.poll_minutes)
         AR["status"] = status
     if AR.get("status") in TERMINAL:
