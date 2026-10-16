@@ -15,5 +15,5 @@
   "ensemble": true,
   "detector": "resnet50", "ot_detector_size": 960,
   "detector_detections": 300, "detector_batch": 2,
-  "source_guard_limits": [0.025,0,0.05], "source_shortlist": 5
+  "source_guard_limits": [0.025,0,0.05], "source_shortlist": 5, "shortlist_seed": "rank"
 }

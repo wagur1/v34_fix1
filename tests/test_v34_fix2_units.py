@@ -97,6 +97,11 @@ def test_rank_seeded_shortlist_does_not_pin_collapsed_ce_choice():
     assert details['calibrated_action'] == 1
     assert 2 not in details['tried_actions'] and calls == [1]
     assert selected == 1 and packet is packets[1]
+    calls.clear()
+    forced, _, _, details = choose_packet(Model(), pair, 'h264', 35, [1, 0, 1],
+                                          dict(cfg, source_shortlist=2, shortlist_seed='forced'),
+                                          packets[0], encode, source_score=score)
+    assert forced == 2 and 2 in details['tried_actions'] and calls == [2, 1]
 
 
 def test_train_controller_runs_on_relative_rows_with_weights():

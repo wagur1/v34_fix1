@@ -67,12 +67,15 @@ def choose_packet(model,pair,codec_name,qp,mask,cfg,anchor,encode,*,domain=None,
     if source_score is not None:
         active=np.asarray(mask,bool)
         rank=out['rate']+.25*np.maximum(out['risk'][:,active],0).mean(1)
-        candidates=[]
+        ranked=np.argsort(rank).tolist()
         # Fix2: seed the shortlist from the calibrated proposal and the measured
         # model ranking instead of pinning the CE decision first. A collapsed CE
         # head then stops burning one measured slot on every clip (Fix1 kept the
         # forced action first), and rank quality becomes the binding constraint.
-        for action in [calibrated,*np.argsort(rank).tolist()]:
+        # `shortlist_seed: "forced"` restores the Fix1 order for ablations.
+        order=[calibrated,*ranked] if cfg.get('shortlist_seed','rank')=='rank' else [forced,calibrated,*ranked]
+        candidates=[]
+        for action in order:
             if action and action not in candidates: candidates.append(action)
             if len(candidates)>=cfg['source_shortlist']: break
         actions=[0,*candidates]; packets=[anchor,*[encode(a) for a in candidates]]
