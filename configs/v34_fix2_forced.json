@@ -1,0 +1,17 @@
+{
+  "schema": "adaptive-vcm-v34-1", "fix": "fix2-units-forced",
+  "seeds": [303401,303402,303403],
+  "codecs": ["h264","h265"], "qps": [30,35,40,45], "preset": "medium",
+  "fps": 25, "frames": 16, "temporal_stride": 2, "ar_size": 128, "od_size": 320,
+  "ot_size": 640, "train_count": 48, "cal_count": 16, "dev_count": 16,
+  "test_count": 64, "ot_frames": 256, "epochs": 60, "lr": 0.001,
+  "damage_units": "relative", "damage_floor": [0.001,0.001,0.001],
+  "oracle_damage_weight": [0.25,0.25,0.25],
+  "damage_tolerance": [0.05,0.05,0.05], "budget_ratio": 1.01,
+  "cal_coverage": 0.9, "fixed_action": 11,
+  "task_logits": true, "task_ce_weight": 1.0,
+  "risk_loss": "pinball", "risk_quantile": 0.9,
+  "ensemble": true,
+  "source_guard_limits": [0,0.05,0], "source_shortlist": 5, "shortlist_seed": "forced",
+  "detector": "resnet50", "detector_detections": 300, "detector_batch": 2
+}

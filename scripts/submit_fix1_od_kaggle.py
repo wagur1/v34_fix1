@@ -47,7 +47,7 @@ def kaggle_call(arguments, pool, account):
     return safe_output
 
 
-def build_notebook_script(commit: str, slug: str, counts: dict) -> str:
+def build_notebook_script(commit: str, slug: str, counts: dict, config_name: str = "v34.json") -> str:
     return f'''import os, pathlib, shutil, subprocess, sys, tarfile, time
 
 WORK = pathlib.Path('/kaggle/working')
@@ -63,7 +63,7 @@ def cmd(argv, cwd=None):
     print(">> Executing:", ' '.join(argv), flush=True)
     subprocess.run(argv, check=True, cwd=cwd or str(WORK))
 
-print("=== V34-Fix1 OD Benchmark on COCO 2017 ===", flush=True)
+print("=== V34 OD Benchmark on COCO 2017 | config " + {config_name!r} + " ===", flush=True)
 start_time = time.time()
 
 cmd(['git', 'clone', '-q', {REPO_URL!r}, str(REPO)])
@@ -97,7 +97,7 @@ cmd([
     sys.executable, str(REPO / 'scripts' / 'run_v34_od.py'),
     '--od-root', img_dir,
     '--annotations', ann_file,
-    '--config', str(REPO / 'configs' / 'v34.json'),
+    '--config', str(REPO / 'configs' / {config_name!r}),
     '--out', str(OUT),
     '--train-count', str(COUNTS['train']),
     '--cal-count', str(COUNTS['cal']),
@@ -121,10 +121,11 @@ print(f"Archive written to {{tgz_path}}", flush=True)
 '''
 
 
-def prepare_and_submit(account: str, slug: str, pool_path: Path, commit: str, counts: dict):
+def prepare_and_submit(account: str, slug: str, pool_path: Path, commit: str, counts: dict,
+                       config_name: str = "v34.json"):
     payload_dir = ROOT / "outputs" / "kaggle" / slug
     payload_dir.mkdir(parents=True, exist_ok=True)
-    script_source = build_notebook_script(commit, slug, counts)
+    script_source = build_notebook_script(commit, slug, counts, config_name)
     notebook = {
         "nbformat": 4,
         "nbformat_minor": 5,
@@ -162,6 +163,7 @@ def main():
     p.add_argument("--slug", default="v34-fix1-od-coco")
     p.add_argument("--pool", type=Path, default=Path(r"C:\Users\Wagur1\Downloads\pool (2).json"))
     p.add_argument("--commit", default="")
+    p.add_argument("--config-name", default="v34.json")
     p.add_argument("--destination", type=Path, default=None)
     p.add_argument("--train-count", type=int, default=192)
     p.add_argument("--cal-count", type=int, default=64)
@@ -174,7 +176,7 @@ def main():
             commit = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
         else:
             commit = args.commit
-        prepare_and_submit(args.account, args.slug, args.pool, commit, counts)
+        prepare_and_submit(args.account, args.slug, args.pool, commit, counts, args.config_name)
     elif args.mode == "status":
         kaggle_call(["kernels", "status", f"{args.account}/{args.slug}"], args.pool, args.account)
     else:
