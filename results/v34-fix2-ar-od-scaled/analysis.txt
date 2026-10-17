@@ -1,0 +1,22 @@
+=== BD-rate test (qps=None, n=None) ===
+
+-- AR/H264 --
+                swin3d_t  BD=      N/A  PCHIP=      N/A  dQ=     N/A
+                  r3d_18  BD=      N/A  PCHIP=      N/A  dQ=     N/A
+
+-- AR/H265 --
+                swin3d_t  BD=      N/A  PCHIP=      N/A  dQ=     N/A
+                  r3d_18  BD=      N/A  PCHIP=      N/A  dQ=     N/A
+
+-- OD/H264 --
+                resnet50  BD=      N/A  PCHIP=      N/A  dQ=     N/A
+
+-- OD/H265 --
+                resnet50  BD=      N/A  PCHIP=      N/A  dQ=     N/A
+
+measurements.json sha256 = d5fceedc3bfd75792201b18577dcb1aa672abfa9466c835945ed80f87b9f9d09
+
+=== Checkpoint calibration (bound vs tolerance) ===
+training_303401.json: seed=303401 tolerance_od=0.05 feasible_actions=[0, 1, 2, 5, 6, 9, 10, 11, 12] bound_range=[0.0000..0.1264]
+training_303402.json: seed=303402 tolerance_od=0.05 feasible_actions=[0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12] bound_range=[0.0000..0.0736]
+training_303403.json: seed=303403 tolerance_od=0.05 feasible_actions=[0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 12] bound_range=[0.0000..0.1378]

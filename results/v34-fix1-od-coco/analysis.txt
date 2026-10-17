@@ -1,0 +1,57 @@
+=== BD-rate test (qps=[30, 35, 40, 45], n=256) ===
+
+-- H264 --
+         selected_303401  BD=   -6.08%  PCHIP=  -16.16%  dQ=+99.15pp
+         selected_303403  BD=   -3.90%  PCHIP=  -16.64%  dQ=+102.10pp
+       selected_ensemble  BD=   -2.91%  PCHIP=  -16.79%  dQ=+106.53pp
+         selected_303402  BD=   -1.16%  PCHIP=  -16.02%  dQ=+99.69pp
+       calibrated_303402  BD=   -0.37%  PCHIP=   -0.11%  dQ= +0.64pp
+       calibrated_303403  BD=   -0.09%  PCHIP=   -0.31%  dQ= +1.91pp
+     calibrated_ensemble  BD=   -0.04%  PCHIP=   -0.01%  dQ= +0.08pp
+       calibrated_303401  BD=   +0.04%  PCHIP=   +0.04%  dQ= -0.21pp
+                   fixed  BD=   +2.43%  PCHIP=   -5.13%  dQ=+20.73pp
+    forced_frozen_303401  BD=   +2.43%  PCHIP=   -5.13%  dQ=+20.73pp
+         forced_ensemble  BD=   +3.91%  PCHIP=  -11.98%  dQ=+77.15pp
+           forced_303403  BD=   +4.18%  PCHIP=  -12.13%  dQ=+79.87pp
+           forced_303402  BD=   +9.26%  PCHIP=  -12.11%  dQ=+79.28pp
+           forced_303401  BD=  +17.87%  PCHIP=  -13.32%  dQ=+85.00pp
+
+-- H265 --
+           forced_303401  BD=  -32.16%  PCHIP=   -5.86%  dQ=+38.57pp
+         forced_ensemble  BD=  -20.59%  PCHIP=   -4.92%  dQ=+33.99pp
+           forced_303402  BD=  -20.00%  PCHIP=   -4.75%  dQ=+32.44pp
+           forced_303403  BD=  -18.92%  PCHIP=   -5.93%  dQ=+43.89pp
+       selected_ensemble  BD=   -9.36%  PCHIP=  -12.89%  dQ=+109.21pp
+         selected_303401  BD=   -8.57%  PCHIP=  -11.71%  dQ=+103.96pp
+         selected_303402  BD=   -8.06%  PCHIP=  -12.86%  dQ=+107.42pp
+                   fixed  BD=   -4.77%  PCHIP=   -0.25%  dQ= +3.28pp
+    forced_frozen_303401  BD=   -4.77%  PCHIP=   -0.25%  dQ= +3.28pp
+       calibrated_303403  BD=   -0.42%  PCHIP=   -0.01%  dQ= +0.10pp
+       calibrated_303402  BD=   -0.27%  PCHIP=   +0.03%  dQ= -0.21pp
+       calibrated_303401  BD=   -0.07%  PCHIP=   -0.00%  dQ= +0.05pp
+     calibrated_ensemble  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+         selected_303403  BD=   +6.75%  PCHIP=  -13.19%  dQ=+110.54pp
+
+=== Arm behavior on test rows ===
+                  anchor  identity=100.0%  a0:2048
+       calibrated_303401  identity= 99.5%  a0:2038, a2:4, a11:2, a6:2
+       calibrated_303402  identity= 99.1%  a0:2029, a1:6, a10:5, a8:3
+       calibrated_303403  identity= 98.6%  a0:2020, a12:10, a4:6, a10:3
+     calibrated_ensemble  identity= 99.8%  a0:2044, a8:3, a1:1
+                   fixed  identity=  0.0%  a11:2048
+           forced_303401  identity=  0.9%  a6:983, a11:696, a4:341, a0:18  calibrated_nonidentity=  0.5%
+           forced_303402  identity=  0.9%  a6:963, a11:673, a4:364, a0:18  calibrated_nonidentity=  0.9%
+           forced_303403  identity=  0.4%  a11:850, a6:828, a4:343, a2:18  calibrated_nonidentity=  1.4%
+         forced_ensemble  identity=  0.8%  a6:946, a11:722, a4:350, a0:17  calibrated_nonidentity=  0.2%
+    forced_frozen_303401  identity=  0.0%  a11:2048
+         selected_303401  identity=  4.1%  a11:723, a6:632, a4:392, a0:83  calibrated_nonidentity=  0.5%
+         selected_303402  identity=  4.0%  a11:697, a6:646, a4:419, a5:91  calibrated_nonidentity=  0.9%
+         selected_303403  identity=  3.7%  a11:705, a6:642, a4:353, a5:106  calibrated_nonidentity=  1.4%
+       selected_ensemble  identity=  4.0%  a11:712, a6:653, a4:384, a5:86  calibrated_nonidentity=  0.2%
+
+measurements.json sha256 = 9012c962b81fe7851330957261f203f32408c0fd996c6aa451189604735821d7
+
+=== Checkpoint calibration (bound vs tolerance) ===
+training_303401.json: seed=303401 tolerance_od=0.05 feasible_actions=[0, 1, 2, 3, 8, 10, 11, 12] bound_range=[0.0000..0.0904]
+training_303402.json: seed=303402 tolerance_od=0.05 feasible_actions=[0, 12] bound_range=[0.0000..0.1817]
+training_303403.json: seed=303403 tolerance_od=0.05 feasible_actions=[0, 1, 2, 6, 10, 11, 12] bound_range=[0.0000..0.1456]

@@ -1,0 +1,40 @@
+=== BD-rate test (qps=[30, 35, 40, 45], n=256) ===
+
+-- H264 --
+       selected_ensemble  BD=   -6.29%  PCHIP=  -15.59%  dQ= +0.96pp
+           forced_303402  BD=   -6.23%  PCHIP=   -9.83%  dQ= +0.70pp
+           forced_303401  BD=   -5.26%  PCHIP=  -12.57%  dQ= +0.88pp
+         selected_303403  BD=   -5.20%  PCHIP=  -15.86%  dQ= +0.97pp
+         forced_ensemble  BD=   -4.86%  PCHIP=  -11.39%  dQ= +0.78pp
+           forced_303403  BD=   -4.82%  PCHIP=  -10.57%  dQ= +0.72pp
+         selected_303401  BD=   -4.65%  PCHIP=  -15.95%  dQ= +0.99pp
+         selected_303402  BD=   -2.50%  PCHIP=  -15.70%  dQ= +0.97pp
+       calibrated_303401  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+       calibrated_303402  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+       calibrated_303403  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+     calibrated_ensemble  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+                   fixed  BD=   +2.43%  PCHIP=   -5.13%  dQ= +0.21pp
+    forced_frozen_303401  BD=   +2.43%  PCHIP=   -5.13%  dQ= +0.21pp
+
+-- H265 --
+           forced_303401  BD=  -15.57%  PCHIP=   -6.53%  dQ= +0.53pp
+         forced_ensemble  BD=  -15.33%  PCHIP=   -6.64%  dQ= +0.54pp
+           forced_303403  BD=  -14.95%  PCHIP=   -6.44%  dQ= +0.53pp
+           forced_303402  BD=  -13.45%  PCHIP=   -6.25%  dQ= +0.51pp
+         selected_303402  BD=   -8.14%  PCHIP=  -13.65%  dQ= +1.14pp
+       selected_ensemble  BD=   -7.32%  PCHIP=  -13.40%  dQ= +1.13pp
+         selected_303401  BD=   -7.21%  PCHIP=  -13.31%  dQ= +1.12pp
+         selected_303403  BD=   -7.14%  PCHIP=  -13.43%  dQ= +1.13pp
+                   fixed  BD=   -4.77%  PCHIP=   -0.25%  dQ= +0.03pp
+    forced_frozen_303401  BD=   -4.77%  PCHIP=   -0.25%  dQ= +0.03pp
+       calibrated_303401  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+       calibrated_303402  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+       calibrated_303403  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+     calibrated_ensemble  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+
+measurements.json sha256 = 9012c962b81fe7851330957261f203f32408c0fd996c6aa451189604735821d7
+
+=== Checkpoint calibration (bound vs tolerance) ===
+training_303401.json: seed=303401 tolerance_od=0.05 feasible_actions=[0] bound_range=[0.0000..0.3226]
+training_303402.json: seed=303402 tolerance_od=0.05 feasible_actions=[0] bound_range=[0.0000..0.3174]
+training_303403.json: seed=303403 tolerance_od=0.05 feasible_actions=[0] bound_range=[0.0000..0.3141]

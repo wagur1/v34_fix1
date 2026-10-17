@@ -1,0 +1,6 @@
+{
+  "origin_commit": "d97affd6691037ce182445b806111ae48454439a",
+  "bundle_sha256": "82fa44d5e37a1bb0f9193d3dbef00b4181a0e6236d969910dcf606c00d5b6fd2",
+  "datasets": "kineticscleaned+COCO2017 val2017",
+  "scope": "exploratory V34-Fix2 AR+OD scaled pilot; shared controller recipe"
+}
