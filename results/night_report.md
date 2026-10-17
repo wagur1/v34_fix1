@@ -422,3 +422,11 @@ cache sha256 = `9012c962b81fe7851330957261f203f32408c0fd996c6aa451189604735821d7
 - BD-rate ≈ 0: H264 −0.46..+0.40% (ensemble +0.13%), H265 −1.21..0% (ensemble −0.59%); dQ ≈ 0.
 - **Kết luận**: trần chặn thật là **chính dự đoán q0.9 của head (~0.25)**, không phải residual → coverage sweep post-hoc không thể hồi sinh calibrated. Muốn "sống" phải hạ `risk_quantile` (retrain 1 run) hoặc nâng `damage_tolerance` — cả hai là đổi policy (đánh đổi an toàn), cần quyết định; mặc định giữ nguyên. Đường phân phối chính vẫn là source-guard: `selected` PCHIP −15.3..−15.8% (H264) / −12.6..−13.3% (H265) — **tái lập đúng biến thể rank** (cùng cache, cùng recipe).
 
+## 10. Vì sao r3d_18 bị hại trong AR (việc 2)
+
+- Guard **chỉ** tối ưu consistency của **swin3d_t** (`TasksHeads.action`; KL + feature distance trên frame đã decode); r3d_18 chỉ là evaluator độc lập — không được bảo vệ.
+- Flip transitions trên cùng packets (anchor → selected, 1024 điểm/arm): swin **+29/−1** (H264) & **+25/−4** (H265); r3d **+12/−15** (H264, gần trung tính) & **+9/−20** (H265, z≈−2.0; ensemble −22, z≈−2.6). Hại tập trung ở **H265**, tăng dần theo QP (−0.8..−3.5pp/QP).
+- bpp chỉ giảm ~3% mà accuracy mất 1–3pp → BD r3d dương (hại). Loss rải trên nhiều action nhẹ (a1/a3/a9/a5/a7 — mix AR khác hẳn OD a11/a6/a4), không thủ phạm đơn lẻ; 8/507 rows chọn action mà swin +1 còn r3d −1 — đối nghịch trực tiếp trên cùng packet.
+- **Kết luận**: thuộc tính dự kiến của guard một-evaluator (gains chỉ đảm bảo cho swin), không phải bug. Option nếu muốn bảo vệ r3d: multi-model guard, lọc shortlist AR, hoặc chấp nhận + ghi rõ. Chi tiết: `results/v34-fix2-ar-od-scaled/r3d18_analysis.txt`.
+
+
