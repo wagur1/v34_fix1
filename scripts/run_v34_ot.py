@@ -262,6 +262,9 @@ def run_pass(args):
         models = [load_checkpoint(out / f"controller_{seed}.pth", device) for seed in cfg["seeds"]]
     else:
         models = train_ot_models(fit_rows, cal_rows, inputs, cfg, out, device, task_models)
+    for split in ("dev", "test"):
+        if (out / f"{split}_tracking").exists():
+            raise SystemExit(f"evaluation artifacts for {split} already exist in {out}; use a fresh output directory")
     print("Evaluating DEV and TEST MOT20 windows (shared packets + pinned TrackEval)", flush=True)
     evaluate(groups, heads, models, cfg, meta, out, Path(args.trackeval))
     write_json(out / "complete.json", dict(status="complete", experiment="ar_ot", stage=args.stage,
