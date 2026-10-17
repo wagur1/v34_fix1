@@ -407,6 +407,18 @@ cache sha256 = `9012c962b81fe7851330957261f203f32408c0fd996c6aa451189604735821d7
 - **Fix2 rank**: `forced_*` ổn định và âm đều ở cả 2 codec (H264 −1.1..−7.1%, H265 −17..−23% linear / −4..−8% PCHIP); calibration bounds khỏe (feasible 9–12/13 action, bound ≤ 0.081). Spread `selected` trên split này 0.4–5.8pp (chưa thu hẹp rõ so fix1); trên split scaled (AR+OD cùng kernel) gọn hơn: −6.6..−8.0% (H264), −8.1..−9.4% (H265).
 - **huber**: bounds 0.31–0.32 → chỉ action 0 feasible → calibrated bị khóa về identity; selected H265 ổn định nhất (−7.1..−7.3%). Kết luận: giữ **pinball**, huber không phù hợp cho risk head.
 - **rank vs forced (shortlist_seed) trên OD**: gần như trùng nhau (cùng top action a11/a6/a4; identity ~1–4% vs anchor 100%) — khác không đáng kể. Trên AR, forced hại rõ (+4..+5% ở swin3d_t) → giữ mặc định **rank**.
-- **Calibrated "sống" chưa?** Chưa: bounds đã feasible (rank: 9–12 action) nhưng action được chọn vẫn identity 99.0–100% (cả `selection_counts` lẫn test rows) → việc tiếp theo là chỉnh policy rate-gate/guard của nhánh calibrated, không còn là chuyện units.
+- **Calibrated "sống" chưa?** Chưa: bounds đã feasible (rank: 9–12 action) nhưng action được chọn vẫn identity 99.0–100% (cả `selection_counts` lẫn test rows) → xem §9: trần chặn thật là chính dự đoán q0.9 (~0.25), coverage sweep post-hoc không hồi sinh được; không phải chuyện units.
 - **AR scaled**: swin3d_t `selected` −20.8..−30.4% (H264) / −10.2..−12.2% (H265) — tín hiệu mạnh; **r3d_18** ~0..+6% — model yếu không hưởng lợi (hại nhẹ). `target_confirmed=false` (thiếu joint GT) — đây là pilot thăm dò, không phải kết luận production.
 - **Hành vi chọn action (rank, OD test)**: selected/forced chọn a11/a6/a4 (≈36%/31%/19%); identity chỉ 4.2%; `fixed` = a11 100%; calibrated ≈ a0 (99%+).
+
+## 9. Điều tra calibrated (hậu đêm) — chẩn đoán + thí nghiệm coverage sweep
+
+**Chẩn đoán (cache `9012c962…`, 2048 rows train+cal):** calibrated không sống không phải chuyện rate-gate/guard — 2017/2048 rows bị chặn bởi **risk bound**, chỉ 10 bởi rate; residual calibration (a11=0.0, a6=0.0803, a4=0.028) không phải thủ phạm. `predicted_risk` (pinball q0.9) cho mọi action ≠ 0 ≈ **0.23–0.28 >> tolerance 0.05**. Damage thật: median 0.02–0.035 nhưng **p90 0.15–0.39** (đuôi nặng, kể cả từng ô codec×QP) → head q0.9 ≈ 0.25 là ước lượng phân vị 0.9 **đúng vai trò**, nhưng "cận tin cậy 90% ≤ 5%" đòi p90 ≤ 5% — không action nào đạt. Calibrated = identity là hành vi đúng của định nghĩa an toàn hiện tại, không phải bug.
+
+**Thí nghiệm `v34-fix2-od-cal`** (ngynanhthuw, cache-reuse 192/64/48/256; arms `calibrated_c50/c60/c70` tính hậu huấn luyện từ residual CAL — không retrain):
+
+- Ba mức coverage 0.5/0.6/0.7 cho **arm giống hệt nhau** (residual CAL tại các mức đó đều = 0 — head q0.9 vốn over-predict phần lớn rows); khác 0.9 chỉ ở residual nhỏ phía trên.
+- Aliveness tăng không đáng kể: identity 98.1–99.7% (so 99.0–99.8% ở 0.9); chỉ các action "nhẹ" lọt qua (a8/a12/a9/a3).
+- BD-rate ≈ 0: H264 −0.46..+0.40% (ensemble +0.13%), H265 −1.21..0% (ensemble −0.59%); dQ ≈ 0.
+- **Kết luận**: trần chặn thật là **chính dự đoán q0.9 của head (~0.25)**, không phải residual → coverage sweep post-hoc không thể hồi sinh calibrated. Muốn "sống" phải hạ `risk_quantile` (retrain 1 run) hoặc nâng `damage_tolerance` — cả hai là đổi policy (đánh đổi an toàn), cần quyết định; mặc định giữ nguyên. Đường phân phối chính vẫn là source-guard: `selected` PCHIP −15.3..−15.8% (H264) / −12.6..−13.3% (H265) — **tái lập đúng biến thể rank** (cùng cache, cùng recipe).
+
