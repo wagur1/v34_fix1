@@ -45,7 +45,7 @@ def main():
             for arm, bd, pchip, quality in sorted(rows, key=lambda r: (r[1] is None, r[1] or 0)):
                 def fmt(value, scale=1.0, suffix=""):
                     return "N/A" if value is None else f"{value*scale:+.2f}{suffix}"
-                print(f"{arm:>24}  BD={fmt(bd, 1, '%'):>9}  PCHIP={fmt(pchip, 1, '%'):>9}  dQ={fmt(quality, 100, 'pp'):>8}")
+                print(f"{arm:>24}  BD={fmt(bd, 1, '%'):>9}  PCHIP={fmt(pchip, 1, '%'):>9}  dQ={fmt(quality, 1, 'pp'):>8}")
 
         if not args.no_rows:
             try:

@@ -350,7 +350,7 @@ def generate_report(test_summary, cfg):
             c = comp[arm]
             bd = f"{c['bd_rate_pct']:.2f}%" if c.get("bd_rate_pct") is not None else "N/A"
             pchip = f"{c['pchip_bd_rate_pct']:.2f}%" if c.get("pchip_bd_rate_pct") is not None else "N/A"
-            qual = f"{c['bd_quality_pp']*100:+.2f}" if c.get("bd_quality_pp") is not None else "N/A"
+            qual = f"{c['bd_quality_pp']:+.2f}" if c.get("bd_quality_pp") is not None else "N/A"
             status = "Tiết kiệm bitrate" if c.get("bd_rate_pct") and c["bd_rate_pct"] < 0 else "Không tiết kiệm"
             lines.append(f"| {codec} | `{arm}` | {bd} | {pchip} | {qual} | {status} |")
 
