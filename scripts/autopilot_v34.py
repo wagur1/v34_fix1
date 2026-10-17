@@ -189,7 +189,7 @@ class Night:
             self.log(f"submit {target['slug']} trên {target['account']} lỗi: {error}", to_report=True)
             return False
 
-    def submit_ar(self, target, commit: str) -> bool:
+    def submit_ar_kernel(self, target, commit: str) -> bool:
         try:
             self.submit_ar.prepare_and_submit(target["account"], target["slug"], self.pool, commit)
             return True
@@ -355,7 +355,7 @@ def main():
     except Exception as error:
         night.note(f"phân tích fix1 lỗi: {error}")
     try:
-        fix1_summary = json.loads((ROOT / "results" / FIX1["slug"] / "test_summary.json").read_text(encoding="utf-8"))
+        fix1_summary = json.loads((fix1_results / "test_summary.json").read_text(encoding="utf-8"))
         night.note(f"measurements sha256: `{json.loads((cache_dir / 'measurements.json').read_text(encoding='utf-8'))['sha256']}`")
         night.note(f"dev: {fix1_summary.get('split')} | count test: {fix1_summary.get('count')}")
     except Exception as error:
@@ -387,7 +387,7 @@ def main():
         night.log(f"{AR['slug']}: đã submit từ trước trên {AR['account']}")
     else:
         night.log(f"submit {AR['slug']} trên {AR['account']} (K400 cleaned + COCO)")
-        if night.submit_ar(AR, head):
+        if night.submit_ar_kernel(AR, head):
             time.sleep(10)
             if not night.kernel_exists(night.submit_ar, AR):
                 AR["status"] = "SUBMIT-FAILED"
