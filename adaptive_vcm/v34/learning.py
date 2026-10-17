@@ -164,6 +164,28 @@ def calibrate_domains(rows,predictions,coverage):
     return dict(domains=domains,count=len(rows),coverage=coverage,
                 scope='domain-specific empirical CAL residuals; correlated QP/window rows; no coverage guarantee')
 
+def coverage_calibrations(rows,predictions,coverages,domains=True):
+    """Extra one-sided CAL tables at lower safety coverages (post-hoc, no retraining).
+
+    Coverage only rescales the residual bound after training, so a coverage
+    sweep can run as evaluation arms while the deployed 0.9 table stays intact.
+    Motivation: with heavy-tailed per-row damage the q0.9 pred + 0.9-coverage
+    bound is far above a 0.05 tolerance for every useful action, which pins the
+    calibrated arm to identity; lower coverages trade the safety level for
+    aliveness and make that trade explicit on held-out curves. `domains=False`
+    emits the legacy single-table layout used by the OD kernel.
+    """
+    values=sorted({float(value) for value in coverages})
+    if any(not 0<value<1 for value in values): raise ValueError('coverage outside (0,1)')
+    result=[]
+    for coverage in values:
+        table=(calibrate_domains(rows,predictions,coverage) if domains else
+            calibrate(np.array([p['risk'] for p in predictions]),np.array([r['damage'] for r in rows],float),
+                np.array([p['rate'] for p in predictions]),np.array([r['rate'] for r in rows]),
+                np.array([r['mask'] for r in rows],bool),coverage))
+        result.append(dict(coverage=coverage,calibration=table))
+    return result
+
 def domain_calibration(calibration,domain):
     if 'domains' not in calibration: return calibration
     if domain not in calibration['domains']: raise ValueError('missing domain calibration')

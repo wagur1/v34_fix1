@@ -102,6 +102,10 @@ def train_od_models(fit_rows, cal_rows, inputs, cfg, out, device, task_models):
         meta_dict = dict(seed=seed, settings=cfg, actions=[list(a) for a in ACTIONS],
                          experiment="ar_od", task_models=task_models, calibration=calibration,
                          checkpoint_role="LAST", training_history=history)
+        if cfg.get("cal_coverage_extra"):
+            from adaptive_vcm.v34.learning import coverage_calibrations
+            meta_dict["calibration_extra"] = coverage_calibrations(
+                cal_rows, pred, cfg["cal_coverage_extra"], domains=False)
         path = out / f"controller_{seed}.pth"
         save_checkpoint(path, model, meta_dict)
         models.append(load_checkpoint(path, device))
@@ -262,6 +266,11 @@ def run_benchmark(args):
                         calibrated = details["calibrated_action"]; cp = encode(calibrated)
                         fallback = cp.coded_bytes > anchor.coded_bytes * cfg["budget_ratio"]
                         arms[f"calibrated_{tag}"] = (0 if fallback else calibrated, anchor if fallback else cp, {"rate_fallback": fallback})
+                        for entry in details.get("calibrated_alt", []):
+                            coverage = entry["coverage"]; action = entry["action"]; cp = encode(action)
+                            fallback = cp.coded_bytes > anchor.coded_bytes * cfg["budget_ratio"]
+                            arms[f"calibrated_c{int(round(coverage * 100))}_{tag}"] = (0 if fallback else action,
+                                anchor if fallback else cp, {"rate_fallback": fallback, "coverage": coverage})
 
                     if frozen_model is not None:
                         # Condition vector with 9 dimensions for frozen model

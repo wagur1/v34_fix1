@@ -20,10 +20,15 @@ def candidate_arms(models,cfg):
     arms=[(str(model.metadata.get('seed',index)),model) for index,model in enumerate(models)]
     if cfg.get('ensemble',True) and len(models)>1:
         calibrations=[model.metadata['calibration'] for model in models]
-        ensemble=EnsembleController(list(models),dict(calibration=merge_calibrations(calibrations),
+        metadata=dict(calibration=merge_calibrations(calibrations),
             seeds=[model.metadata.get('seed') for model in models],
-            ensemble=True,scope='elementwise mean of member outputs; averaged calibration bounds'))
-        arms.append(('ensemble',ensemble))
+            ensemble=True,scope='elementwise mean of member outputs; averaged calibration bounds')
+        extras=[model.metadata.get('calibration_extra') for model in models]
+        if all(extras):
+            if any(len(extra)!=len(extras[0]) for extra in extras): raise ValueError('ensemble coverage sweep mismatch')
+            metadata['calibration_extra']=[dict(coverage=entry['coverage'],calibration=merge_calibrations(
+                [extra[index]['calibration'] for extra in extras])) for index,entry in enumerate(extras[0])]
+        arms.append(('ensemble',EnsembleController(list(models),metadata)))
     return arms
 
 def tracking_curve(anchor,adaptive):
@@ -64,6 +69,9 @@ def choose_packet(model,pair,codec_name,qp,mask,cfg,anchor,encode,*,domain=None,
     forced=int(np.argmax(out['logits']))
     selected=select_action(out['risk'],out['rate'],domain_calibration(model.metadata['calibration'],domain),mask,cfg['damage_tolerance'],cfg['budget_ratio'])
     calibrated=selected
+    calibrated_alt=[dict(coverage=entry['coverage'],action=select_action(out['risk'],out['rate'],
+        domain_calibration(entry['calibration'],domain),mask,cfg['damage_tolerance'],cfg['budget_ratio']))
+        for entry in model.metadata.get('calibration_extra',[])]
     if source_score is not None:
         active=np.asarray(mask,bool)
         rank=out['rate']+.25*np.maximum(out['risk'][:,active],0).mean(1)
@@ -84,7 +92,7 @@ def choose_packet(model,pair,codec_name,qp,mask,cfg,anchor,encode,*,domain=None,
         choice,guard=source_guard_choice(rates,costs,mask,cfg['source_guard_limits'],cfg['budget_ratio'])
         guard['rejected']=[actions[i] for i in guard['rejected']]
         return forced,actions[choice],packets[choice],dict(predicted_risk=out['risk'],predicted_rate=out['rate'],
-            proposed_action=actions[choice],calibrated_action=calibrated,rate_fallback=False,
+            proposed_action=actions[choice],calibrated_action=calibrated,calibrated_alt=calibrated_alt,rate_fallback=False,
             tried_actions=actions,source_guard=guard,controller_inference_seconds=inference_seconds,
             selection_policy='CNN shortlist + real decoded source guard')
     proposed=selected
@@ -92,7 +100,7 @@ def choose_packet(model,pair,codec_name,qp,mask,cfg,anchor,encode,*,domain=None,
     fallback=packet.coded_bytes>anchor.coded_bytes*cfg['budget_ratio']
     if fallback: selected=0; packet=anchor
     return forced,selected,packet,dict(predicted_risk=out['risk'],predicted_rate=out['rate'],proposed_action=proposed,
-                                     calibrated_action=calibrated,rate_fallback=fallback,tried_actions=[0]+([proposed] if proposed else []))
+                                     calibrated_action=calibrated,calibrated_alt=calibrated_alt,rate_fallback=fallback,tried_actions=[0]+([proposed] if proposed else []))
 
 @torch.no_grad()
 def received_predictions(packet,heads,transfer_ar,transfer_od,task):
@@ -213,6 +221,11 @@ def evaluate(groups,heads,models,cfg,meta,out,trackeval_path):
                             calibrated=details['calibrated_action']; cp=encode(calibrated)
                             fallback=cp.coded_bytes>anchor.coded_bytes*cfg['budget_ratio']
                             arms[f'calibrated_{tag}']=(0 if fallback else calibrated,anchor if fallback else cp,{'rate_fallback':fallback})
+                        for entry in details.get('calibrated_alt',[]):
+                            coverage=entry['coverage']; action=entry['action']; cp=encode(action)
+                            fallback=cp.coded_bytes>anchor.coded_bytes*cfg['budget_ratio']
+                            arms[f'calibrated_c{int(round(coverage*100))}_{tag}']=(0 if fallback else action,
+                                anchor if fallback else cp,{'rate_fallback':fallback,'coverage':coverage})
                     for arm,(action,packet,details) in arms.items():
                         sha=packet.packet_sha256
                         if sha not in predictions:

@@ -81,11 +81,16 @@ def train_models(cache,inputs,cfg,out,device,task_models):
         else:
             calibration=calibrate(np.array([p['risk'] for p in pred]),actual,np.array([p['rate'] for p in pred]),
                 np.array([r['rate'] for r in cal]),np.array([r['mask'] for r in cal],bool),cfg['cal_coverage'])
+        calibration_extra=None
+        if cfg.get('cal_coverage_extra'):
+            from .learning import coverage_calibrations
+            calibration_extra=coverage_calibrations(cal,pred,cfg['cal_coverage_extra'],domains=bool(cfg.get('domain_condition')))
         meta=dict(seed=seed,settings=cfg,actions=[list(a) for a in ACTIONS],experiment=cache['experiment'],
             task_logits=cfg.get('task_logits',False),
             source_commit=cache['origin']['origin_commit'],source_archive_sha256=cache['origin']['bundle_sha256'],
             cache_sha256=cache['sha256'],sources=cache['sources'],task_models=task_models,calibration=calibration,
             checkpoint_role='LAST',training_history=history,codec_backpropagation=False)
+        if calibration_extra is not None: meta['calibration_extra']=calibration_extra
         path=out/f'controller_{seed}.pth'; save_checkpoint(path,model,meta)
         models.append(load_checkpoint(path,device)); write_json(out/f'training_{seed}.json',meta)
     return models
