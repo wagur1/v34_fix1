@@ -274,6 +274,8 @@ def build_summary_table(night: Night, slugs) -> str:
     for slug in slugs:
         summary_path = ROOT / "results" / slug / "test_summary.json"
         if not summary_path.is_file():
+            summary_path = ROOT / "results" / slug.replace("-", "_") / "test_summary.json"
+        if not summary_path.is_file():
             lines.append(f"| {slug} | - | (no test_summary) | - | - |")
             continue
         try:

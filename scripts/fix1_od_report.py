@@ -36,16 +36,36 @@ def main():
     try:
         summary = find(directory, "test_summary.json", tar)
         print(f"=== BD-rate test (qps={summary.get('qps')}, n={summary.get('count')}) ===")
+
+        def collect_rows(comparisons):
+            """comparisons is {arm: metrics} (OD) or {model: {arm: metrics}} (AR/OD)."""
+            rows = []
+            for arm, value in comparisons.items():
+                if isinstance(value, dict) and value and all(isinstance(v, dict) for v in value.values()):
+                    for sub, sub_value in value.items():
+                        rows.append((f"{arm}/{sub}", sub_value.get("bd_rate_pct"),
+                                     sub_value.get("pchip_bd_rate_pct"), sub_value.get("bd_quality_pp")))
+                else:
+                    rows.append((arm, value.get("bd_rate_pct"),
+                                 value.get("pchip_bd_rate_pct"), value.get("bd_quality_pp")))
+            return rows
+
+        def fmt(value, scale=1.0, suffix=""):
+            return "N/A" if value is None else f"{value*scale:+.2f}{suffix}"
+
         for codec, data in summary.get("results", {}).items():
             print(f"\n-- {str(codec).upper()} --")
-            rows = []
-            for arm, value in data.get("comparisons", {}).items():
-                rows.append((arm, value.get("bd_rate_pct"), value.get("pchip_bd_rate_pct"),
-                             value.get("bd_quality_pp")))
+            rows = collect_rows(data.get("comparisons", {}))
             for arm, bd, pchip, quality in sorted(rows, key=lambda r: (r[1] is None, r[1] or 0)):
-                def fmt(value, scale=1.0, suffix=""):
-                    return "N/A" if value is None else f"{value*scale:+.2f}{suffix}"
-                print(f"{arm:>24}  BD={fmt(bd, 1, '%'):>9}  PCHIP={fmt(pchip, 1, '%'):>9}  dQ={fmt(quality, 1, 'pp'):>8}")
+                print(f"{arm:>34}  BD={fmt(bd, 1, '%'):>9}  PCHIP={fmt(pchip, 1, '%'):>9}  dQ={fmt(quality, 1, 'pp'):>8}")
+
+        counts = summary.get("selection_counts")
+        if counts:
+            print("\n=== Selection counts (identity share per arm) ===")
+            for arm, info in counts.items():
+                total = info.get("total") or 1
+                print(f"{arm:>24}  identity={info.get('identity', 0) / total * 100:5.1f}%  "
+                      f"rate_fallback={info.get('rate_fallback', 0)}  q8_changed={info.get('q8_changed', 0)}  total={total}")
 
         if not args.no_rows:
             try:
@@ -77,9 +97,14 @@ def main():
 
         print("\n=== Checkpoint calibration (bound vs tolerance) ===")
         names = sorted({m.name for m in tar.getmembers()}) if tar else []
-        seen = False
+        entries: list[tuple[str, dict]] = []
         for name in [n for n in names if Path(n).name.startswith("training_")]:
-            value = json.loads(tar.extractfile(name).read().decode("utf-8"))
+            entries.append((Path(name).name, json.loads(tar.extractfile(name).read().decode("utf-8"))))
+        if not entries:
+            for path in sorted(directory.rglob("training_*.json")):
+                entries.append((path.name, json.loads(path.read_text(encoding="utf-8"))))
+        seen = False
+        for label, value in entries:
             calibration = value["calibration"]
             risk = calibration["risk"]
             limits = value["settings"]["damage_tolerance"]
@@ -88,10 +113,10 @@ def main():
                 continue
             seen = True
             feasible = [j for j, row in enumerate(risk) if row[1] is not None and row[1] <= limits[1]]
-            print(f"{Path(name).name}: seed={value['seed']} tolerance_od={limits[1]} "
+            print(f"{label}: seed={value['seed']} tolerance_od={limits[1]} "
                   f"feasible_actions={feasible} bound_range=[{min(bounds):.4f}..{max(bounds):.4f}]")
         if not seen:
-            print("(no training_*.json inside archive; skipped)")
+            print("(no training_*.json found; skipped)")
     finally:
         if tar is not None:
             tar.close()

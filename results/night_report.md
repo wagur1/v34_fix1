@@ -75,6 +75,8 @@ training_303403.json: seed=303403 tolerance_od=0.05 feasible_actions=[0, 1, 2, 6
 measurements sha256: `9012c962b81fe7851330957261f203f32408c0fd996c6aa451189604735821d7`
 dev: test | count test: 256
 
+> Ghi chú đính chính: cột dQ ở bảng trên in ×100 (lỗi hiển thị cũ — đã sửa code, commit `3890709`); giá trị thật = số hiển thị ÷ 100. Ví dụ `selected_303401` H264: **+0.99pp mAP** (thay vì +99.15). Các mục sau đã in đúng đơn vị.
+
 ## 3. Biến thể Fix2 OD
 
 
@@ -223,23 +225,111 @@ training_303403.json: seed=303403 tolerance_od=0.05 feasible_actions=[0, 1, 2, 3
 ### v34-fix2-ar-od-scaled
 
 ```
-=== BD-rate test (qps=None, n=None) ===
+=== BD-rate test (đã đính chính: cấu trúc lồng theo model; qps=[30, 35, 40, 45]) ===
 
 -- AR/H264 --
-                swin3d_t  BD=      N/A  PCHIP=      N/A  dQ=     N/A
-                  r3d_18  BD=      N/A  PCHIP=      N/A  dQ=     N/A
+          swin3d_t/selected_303401  BD=  -30.38%  PCHIP=  -24.13%  dQ= +6.94pp
+          swin3d_t/selected_303403  BD=  -24.58%  PCHIP=  -23.22%  dQ= +6.68pp
+        swin3d_t/selected_ensemble  BD=  -23.83%  PCHIP=  -21.86%  dQ= +6.08pp
+          swin3d_t/selected_303402  BD=  -20.78%  PCHIP=  -21.42%  dQ= +6.01pp
+              r3d_18/forced_303401  BD=   -6.49%  PCHIP=   +4.03%  dQ= -1.58pp
+                    swin3d_t/fixed  BD=   -2.16%  PCHIP=   -2.39%  dQ= +0.66pp
+        swin3d_t/calibrated_303401  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+        swin3d_t/calibrated_303402  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+        swin3d_t/calibrated_303403  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+      swin3d_t/calibrated_ensemble  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+          r3d_18/calibrated_303401  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+          r3d_18/calibrated_303402  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+          r3d_18/calibrated_303403  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+        r3d_18/calibrated_ensemble  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+            r3d_18/selected_303401  BD=   +0.24%  PCHIP=   +1.26%  dQ= -0.38pp
+            r3d_18/selected_303403  BD=   +0.40%  PCHIP=   -1.44%  dQ= +0.36pp
+          r3d_18/selected_ensemble  BD=   +1.66%  PCHIP=   -0.05%  dQ= -0.20pp
+              r3d_18/forced_303403  BD=   +2.08%  PCHIP=   +6.67%  dQ= -1.87pp
+            r3d_18/forced_ensemble  BD=   +3.86%  PCHIP=   +6.83%  dQ= -1.97pp
+            swin3d_t/forced_303401  BD=   +4.09%  PCHIP=   +4.10%  dQ= -1.26pp
+            swin3d_t/forced_303403  BD=   +4.12%  PCHIP=   +4.09%  dQ= -1.29pp
+            r3d_18/selected_303402  BD=   +4.28%  PCHIP=   +2.51%  dQ= -0.84pp
+          swin3d_t/forced_ensemble  BD=   +5.09%  PCHIP=   +4.83%  dQ= -1.55pp
+            swin3d_t/forced_303402  BD=   +5.33%  PCHIP=   +5.08%  dQ= -1.61pp
+              r3d_18/forced_303402  BD=   +5.67%  PCHIP=   +6.60%  dQ= -2.32pp
+                      r3d_18/fixed  BD=  +11.66%  PCHIP=  +14.52%  dQ= -4.47pp
 
 -- AR/H265 --
-                swin3d_t  BD=      N/A  PCHIP=      N/A  dQ=     N/A
-                  r3d_18  BD=      N/A  PCHIP=      N/A  dQ=     N/A
+          swin3d_t/selected_303403  BD=  -12.16%  PCHIP=  -14.51%  dQ= +6.31pp
+          swin3d_t/selected_303402  BD=  -11.84%  PCHIP=  -12.76%  dQ= +5.50pp
+        swin3d_t/selected_ensemble  BD=  -11.65%  PCHIP=  -12.56%  dQ= +5.40pp
+          swin3d_t/selected_303401  BD=  -10.17%  PCHIP=  -13.29%  dQ= +5.59pp
+                    swin3d_t/fixed  BD=   -6.02%  PCHIP=   -5.51%  dQ= +2.54pp
+            swin3d_t/forced_303401  BD=   -2.67%  PCHIP=   -2.17%  dQ= +1.14pp
+          swin3d_t/forced_ensemble  BD=   -1.61%  PCHIP=   -1.48%  dQ= +0.55pp
+            swin3d_t/forced_303403  BD=   -1.22%  PCHIP=   -1.40%  dQ= +0.44pp
+            swin3d_t/forced_303402  BD=   -0.87%  PCHIP=   -1.31%  dQ= +0.24pp
+        swin3d_t/calibrated_303401  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+        swin3d_t/calibrated_303402  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+        swin3d_t/calibrated_303403  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+      swin3d_t/calibrated_ensemble  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+          r3d_18/calibrated_303401  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+          r3d_18/calibrated_303402  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+          r3d_18/calibrated_303403  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+        r3d_18/calibrated_ensemble  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+            r3d_18/forced_ensemble  BD=   +0.41%  PCHIP=   +0.83%  dQ= -0.49pp
+              r3d_18/forced_303402  BD=   +0.45%  PCHIP=   -1.31%  dQ= +0.39pp
+              r3d_18/forced_303403  BD=   +3.24%  PCHIP=   +1.02%  dQ= -0.55pp
+            r3d_18/selected_303403  BD=   +3.78%  PCHIP=   +5.40%  dQ= -2.15pp
+            r3d_18/selected_303401  BD=   +4.19%  PCHIP=   +3.58%  dQ= -1.12pp
+          r3d_18/selected_ensemble  BD=   +5.48%  PCHIP=   +2.83%  dQ= -1.09pp
+            r3d_18/selected_303402  BD=   +6.34%  PCHIP=   +3.64%  dQ= -1.27pp
+              r3d_18/forced_303401  BD=  +11.23%  PCHIP=  +10.51%  dQ= -3.39pp
+                      r3d_18/fixed  BD=  +15.31%  PCHIP=  +14.40%  dQ= -4.41pp
 
 -- OD/H264 --
-                resnet50  BD=      N/A  PCHIP=      N/A  dQ=     N/A
+          resnet50/selected_303402  BD=   -8.03%  PCHIP=   -7.99%  dQ= +1.20pp
+            resnet50/forced_303401  BD=   -7.79%  PCHIP=   -7.90%  dQ= +1.20pp
+          resnet50/selected_303403  BD=   -6.76%  PCHIP=   -6.74%  dQ= +1.02pp
+          resnet50/selected_303401  BD=   -6.68%  PCHIP=   -6.64%  dQ= +0.99pp
+        resnet50/selected_ensemble  BD=   -6.64%  PCHIP=   -6.51%  dQ= +0.96pp
+            resnet50/forced_303403  BD=   -4.67%  PCHIP=   -4.58%  dQ= +0.72pp
+          resnet50/forced_ensemble  BD=   -4.51%  PCHIP=   -4.44%  dQ= +0.69pp
+            resnet50/forced_303402  BD=   -3.65%  PCHIP=   -3.53%  dQ= +0.56pp
+                    resnet50/fixed  BD=   -1.65%  PCHIP=   -1.26%  dQ= +0.11pp
+        resnet50/calibrated_303403  BD=   -0.08%  PCHIP=   -0.05%  dQ= +0.01pp
+        resnet50/calibrated_303401  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+        resnet50/calibrated_303402  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+      resnet50/calibrated_ensemble  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
 
 -- OD/H265 --
-                resnet50  BD=      N/A  PCHIP=      N/A  dQ=     N/A
+            resnet50/forced_303402  BD=   -9.90%  PCHIP=   -9.12%  dQ= +1.70pp
+        resnet50/selected_ensemble  BD=   -9.36%  PCHIP=   -9.12%  dQ= +1.80pp
+            resnet50/forced_303403  BD=   -9.04%  PCHIP=   -8.83%  dQ= +1.71pp
+          resnet50/selected_303401  BD=   -8.90%  PCHIP=   -8.49%  dQ= +1.65pp
+          resnet50/selected_303402  BD=   -8.29%  PCHIP=   -8.18%  dQ= +1.67pp
+          resnet50/selected_303403  BD=   -8.14%  PCHIP=   -7.63%  dQ= +1.45pp
+                    resnet50/fixed  BD=   -7.04%  PCHIP=   -6.63%  dQ= +1.48pp
+          resnet50/forced_ensemble  BD=   -6.74%  PCHIP=   -5.88%  dQ= +1.03pp
+            resnet50/forced_303401  BD=   -6.41%  PCHIP=   -5.95%  dQ= +1.12pp
+        resnet50/calibrated_303402  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+        resnet50/calibrated_303403  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+      resnet50/calibrated_ensemble  BD=   +0.00%  PCHIP=   +0.00%  dQ= +0.00pp
+        resnet50/calibrated_303401  BD=   +0.01%  PCHIP=   +0.01%  dQ= -0.00pp
 
-measurements.json sha256 = d5fceedc3bfd75792201b18577dcb1aa672abfa9466c835945ed80f87b9f9d09
+=== Selection counts (identity share per arm) ===
+                  anchor  identity=100.0%  rate_fallback=0  q8_changed=0  total=2048
+       calibrated_303401  identity= 99.6%  rate_fallback=0  q8_changed=1  total=2048
+       calibrated_303402  identity=100.0%  rate_fallback=0  q8_changed=0  total=2048
+       calibrated_303403  identity= 99.8%  rate_fallback=0  q8_changed=4  total=2048
+     calibrated_ensemble  identity=100.0%  rate_fallback=0  q8_changed=0  total=2048
+                   fixed  identity=  0.0%  rate_fallback=0  q8_changed=2048  total=2048
+           forced_303401  identity= 18.0%  rate_fallback=0  q8_changed=1679  total=2048
+           forced_303402  identity= 27.5%  rate_fallback=0  q8_changed=1485  total=2048
+           forced_303403  identity= 30.7%  rate_fallback=0  q8_changed=1419  total=2048
+         forced_ensemble  identity= 29.3%  rate_fallback=0  q8_changed=1447  total=2048
+         selected_303401  identity= 27.3%  rate_fallback=0  q8_changed=1489  total=2048
+         selected_303402  identity= 26.5%  rate_fallback=0  q8_changed=1506  total=2048
+         selected_303403  identity= 27.5%  rate_fallback=0  q8_changed=1485  total=2048
+       selected_ensemble  identity= 27.4%  rate_fallback=0  q8_changed=1486  total=2048
+
+measurements.json sha256 = d5fceedc3bfd75792201b18577dcb1aa672abfa9466c835945ed80f87b9f9d09 (tải từ kernel)
 
 === Checkpoint calibration (bound vs tolerance) ===
 training_303401.json: seed=303401 tolerance_od=0.05 feasible_actions=[0, 1, 2, 5, 6, 9, 10, 11, 12] bound_range=[0.0000..0.1264]
@@ -251,7 +341,14 @@ training_303403.json: seed=303403 tolerance_od=0.05 feasible_actions=[0, 1, 2, 3
 
 | Run | Codec | arm | BD-rate | PCHIP |
 |---|---|---|---:|---:|
-| v34-fix1-od-coco | - | (no test_summary) | - | - |
+| v34-fix1-od-coco | h264 | `selected_303401` | -6.08% | -16.16% |
+| v34-fix1-od-coco | h264 | `selected_ensemble` | -2.91% | -16.79% |
+| v34-fix1-od-coco | h264 | `calibrated_303401` | +0.04% | +0.04% |
+| v34-fix1-od-coco | h264 | `forced_303401` | +17.87% | -13.32% |
+| v34-fix1-od-coco | h265 | `selected_303401` | -8.57% | -11.71% |
+| v34-fix1-od-coco | h265 | `selected_ensemble` | -9.36% | -12.89% |
+| v34-fix1-od-coco | h265 | `calibrated_303401` | -0.07% | -0.00% |
+| v34-fix1-od-coco | h265 | `forced_303401` | -32.16% | -5.86% |
 | v34-fix2-od-rank | h264 | `selected_303401` | -1.36% | -15.77% |
 | v34-fix2-od-rank | h264 | `selected_ensemble` | -4.93% | -15.45% |
 | v34-fix2-od-rank | h264 | `calibrated_303401` | -0.03% | -0.03% |
@@ -288,13 +385,28 @@ training_303403.json: seed=303403 tolerance_od=0.05 feasible_actions=[0, 1, 2, 3
 | v34-fix2-od-forced | h265 | `calibrated_ensemble` | +0.00% | +0.00% |
 | v34-fix2-od-forced | h265 | `forced_303401` | -16.96% | -7.95% |
 | v34-fix2-od-forced | h265 | `fixed` | -4.77% | -0.25% |
+| v34-fix2-ar-od-scaled | ar-h264 | `swin3d_t/selected_303401` | -30.38% | -24.13% |
+| v34-fix2-ar-od-scaled | ar-h264 | `r3d_18/selected_ensemble` | +1.66% | -0.05% |
+| v34-fix2-ar-od-scaled | od-h264 | `resnet50/selected_303401` | -6.68% | -6.64% |
+| v34-fix2-ar-od-scaled | od-h265 | `resnet50/selected_ensemble` | -9.36% | -9.12% |
 
 cache sha256 = `9012c962b81fe7851330957261f203f32408c0fd996c6aa451189604735821d7` — mọi biến thể tái sử dụng cùng cache này (đối chiếu `measurements.json sha256` trong log từng biến thể).
 
 ## 7. Trạng thái kernel cuối
 
-- `wagur124705/v34-fix1-od-coco`: **UNKNOWN**  https://www.kaggle.com/code/wagur124705/v34-fix1-od-coco
+- `wagur124705/v34-fix1-od-coco`: **COMPLETE**  https://www.kaggle.com/code/wagur124705/v34-fix1-od-coco
 - `tranthihongdieu/v34-fix2-od-rank`: **COMPLETE**  https://www.kaggle.com/code/tranthihongdieu/v34-fix2-od-rank
 - `hieusunday0412/v34-fix2-od-huber`: **COMPLETE**  https://www.kaggle.com/code/hieusunday0412/v34-fix2-od-huber
 - `nguyenhoanglan1232/v34-fix2-od-forced`: **COMPLETE**  https://www.kaggle.com/code/nguyenhoanglan1232/v34-fix2-od-forced
 - `dngbolm/v34-fix2-ar-od-scaled`: **COMPLETE**  https://www.kaggle.com/code/dngbolm/v34-fix2-ar-od-scaled
+[14:54:56] === Autopilot hoàn tất ===
+
+## 8. Đọc nhanh (sau đính chính)
+
+- **fix1 (pinball trước units — chỉ để chẩn đoán)**: `selected` H264 −6.08% (401) nhưng spread theo seed lớn (1.2–6.1pp); `forced_*` bất ổn định (H264 linear dương +2.4..+17.9% trong khi H265 linear −19..−32% — dấu ngược nhau giữa hai codec; PCHIP lại trái chiều) → supervision trước fix2 chưa đáng tin.
+- **Fix2 rank**: `forced_*` ổn định và âm đều ở cả 2 codec (H264 −1.1..−7.1%, H265 −17..−23% linear / −4..−8% PCHIP); calibration bounds khỏe (feasible 9–12/13 action, bound ≤ 0.081). Spread `selected` trên split này 0.4–5.8pp (chưa thu hẹp rõ so fix1); trên split scaled (AR+OD cùng kernel) gọn hơn: −6.6..−8.0% (H264), −8.1..−9.4% (H265).
+- **huber**: bounds 0.31–0.32 → chỉ action 0 feasible → calibrated bị khóa về identity; selected H265 ổn định nhất (−7.1..−7.3%). Kết luận: giữ **pinball**, huber không phù hợp cho risk head.
+- **rank vs forced (shortlist_seed) trên OD**: gần như trùng nhau (cùng top action a11/a6/a4; identity ~1–4% vs anchor 100%) — khác không đáng kể. Trên AR, forced hại rõ (+4..+5% ở swin3d_t) → giữ mặc định **rank**.
+- **Calibrated "sống" chưa?** Chưa: bounds đã feasible (rank: 9–12 action) nhưng action được chọn vẫn identity 99.0–100% (cả `selection_counts` lẫn test rows) → việc tiếp theo là chỉnh policy rate-gate/guard của nhánh calibrated, không còn là chuyện units.
+- **AR scaled**: swin3d_t `selected` −20.8..−30.4% (H264) / −10.2..−12.2% (H265) — tín hiệu mạnh; **r3d_18** ~0..+6% — model yếu không hưởng lợi (hại nhẹ). `target_confirmed=false` (thiếu joint GT) — đây là pilot thăm dò, không phải kết luận production.
+- **Hành vi chọn action (rank, OD test)**: selected/forced chọn a11/a6/a4 (≈36%/31%/19%); identity chỉ 4.2%; `fixed` = a11 100%; calibrated ≈ a0 (99%+).
