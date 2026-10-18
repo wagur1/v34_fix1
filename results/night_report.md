@@ -429,4 +429,16 @@ cache sha256 = `9012c962b81fe7851330957261f203f32408c0fd996c6aa451189604735821d7
 - bpp chỉ giảm ~3% mà accuracy mất 1–3pp → BD r3d dương (hại). Loss rải trên nhiều action nhẹ (a1/a3/a9/a5/a7 — mix AR khác hẳn OD a11/a6/a4), không thủ phạm đơn lẻ; 8/507 rows chọn action mà swin +1 còn r3d −1 — đối nghịch trực tiếp trên cùng packet.
 - **Kết luận**: thuộc tính dự kiến của guard một-evaluator (gains chỉ đảm bảo cho swin), không phải bug. Option nếu muốn bảo vệ r3d: multi-model guard, lọc shortlist AR, hoặc chấp nhận + ghi rõ. Chi tiết: `results/v34-fix2-ar-od-scaled/r3d18_analysis.txt`.
 
+## 11. OT measurement pass (việc 3) — cache MOT20 dùng lại được
+
+- **Lý do**: OT chưa từng có pass đo riêng — mỗi biến thể OT sẽ phải encode + detect lại toàn bộ 16-frame @960. Đã tách đúng pattern OD: `scripts/run_v34_ot.py` (stage `measure`/`baseline`, reuse cache có kiểm tra settings, partial + resume, time-budget dừng êm) và `scripts/submit_v34_ot_kaggle.py` (dataset `ismailelbouknify/mot-20`, internet cho repo + TrackEval pin `12c8791b…`).
+- **Kernel measure**: `vtk269/v34-ot-measure` COMPLETE — job **2.36h**; đo **16 window** MOT20-02 (12 train + 4 cal clip 16 frame @960; dev MOT20-03/test MOT20-01 để dành cho eval), **128 row** = 13 action × 2 codec × 4 QP, ~500–520s/window, ổn định. Cache sha `eed5ea6b…`; bản dự phòng độc lập `linhowi05/v34-ot-measure` cũng COMPLETE với sha `06b9712…` — chỉ khác trường timing (preprocess/encode/decode seconds), toàn bộ nội dung đo khớp.
+- **Đã commit**: `caches/v34_ot_mot20/` (`measurements.json` + `controller_inputs.pth` + `provenance.json` có sha dataset/sequence) và `results/v34-ot-measure/` (analysis + timings + provenance). Biến thể OT sau này chỉ cần stage `baseline` — không đo lại.
+- **Đọc nhanh cache** (rel damage = cost tracking so với identity cùng window, Fix2 units; trần guard OT của recipe là 5%):
+  - H264: a11 rate 0.928 / rel 1.6%, a6 0.934 / 1.6%, a4 0.954 / ~0.0%, a5 0.959 / 0.6%.
+  - H265: a11 0.920 / 1.4%, a6 0.930 / 0.07%, a4 0.954 / −0.2% (một số action còn nhẹ hơn cả identity).
+  - Ở trần 5%: a11 thắng **86/128** row, a6 **27**, a4 **9**; nhưng zero-damage thì identity vẫn thắng **107/128** — OT khó: đa số window không có action vừa rẻ hơn vừa dưới 5% rel damage. Chi tiết: `results/v34-ot-measure/ot_measure_analysis.txt`.
+- **Trạng thái**: kernel baseline `hoangminhhuy123/v34-ot-baseline` đang chạy (reuse cache → train 3 seed + eval dev/test với TrackEval HOTA; fail-fast check TrackEval import trước khi vào phần nặng). HOTA curves sẽ bổ sung vào mục này khi xong.
+
+
 
