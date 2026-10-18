@@ -61,6 +61,11 @@ def kaggle_call(arguments, pool, account):
 def build_notebook_script(commit: str, slug: str, stage: str, config_name: str, time_budget: int,
                           dataset_slug: str) -> str:
     pin = trackeval_pin()
+    check_code = ("import sys; sys.path.insert(0, '/kaggle/working/v34_fix1'); "
+                  "from pathlib import Path; "
+                  "from adaptive_vcm.v32.tracking import load_trackeval; "
+                  "module = load_trackeval(Path('/kaggle/working/TrackEval')); "
+                  "print('TrackEval import OK', module.__file__)")
     return f'''import os, pathlib, shutil, subprocess, sys, tarfile, time
 
 WORK = pathlib.Path('/kaggle/working')
@@ -87,7 +92,7 @@ cmd(['git', '-C', str(REPO), 'checkout', '-q', {commit!r}])
 print("HEAD is", subprocess.run(['git', '-C', str(REPO), 'rev-parse', 'HEAD'],
       capture_output=True, text=True).stdout.strip(), flush=True)
 
-cmd([sys.executable, '-m', 'pip', 'install', '-q', 'supervision==0.27.0'])
+cmd([sys.executable, '-m', 'pip', 'install', '-q', 'supervision==0.27.0', 'pycocotools'])
 
 matches = [p for p in INPUT.rglob('seqinfo.ini') if p.parent.name in ('MOT20-01', 'MOT20-02', 'MOT20-03')]
 assert matches, 'MOT20 seqinfo.ini not found under /kaggle/input'
@@ -103,6 +108,9 @@ print("MOT20 root:", mot_root, flush=True)
 if STAGE in ('baseline', 'full'):
     cmd(['git', 'clone', '-q', {TRACKEVAL_URL!r}, str(TRACKEVAL)])
     cmd(['git', '-C', str(TRACKEVAL), 'checkout', '-q', {pin!r}])
+    # Fail fast if the pinned official metric package cannot import: setup
+    # problems must never surface after hours of evaluation.
+    cmd([sys.executable, '-c', {check_code!r}])
 
 # Reuse the committed measurement cache when present: baseline runs only
 # retrain and re-evaluate and never repeat the codec roundtrips. A committed
