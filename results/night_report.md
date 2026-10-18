@@ -438,7 +438,13 @@ cache sha256 = `9012c962b81fe7851330957261f203f32408c0fd996c6aa451189604735821d7
   - H264: a11 rate 0.928 / rel 1.6%, a6 0.934 / 1.6%, a4 0.954 / ~0.0%, a5 0.959 / 0.6%.
   - H265: a11 0.920 / 1.4%, a6 0.930 / 0.07%, a4 0.954 / −0.2% (một số action còn nhẹ hơn cả identity).
   - Ở trần 5%: a11 thắng **86/128** row, a6 **27**, a4 **9**; nhưng zero-damage thì identity vẫn thắng **107/128** — OT khó: đa số window không có action vừa rẻ hơn vừa dưới 5% rel damage. Chi tiết: `results/v34-ot-measure/ot_measure_analysis.txt`.
-- **Trạng thái**: kernel baseline `hoangminhhuy123/v34-ot-baseline` đang chạy (reuse cache → train 3 seed + eval dev/test với TrackEval HOTA; fail-fast check TrackEval import trước khi vào phần nặng). HOTA curves sẽ bổ sung vào mục này khi xong.
+- **Baseline (đã xong)**: kernel `hoangminhhuy123/v34-ot-baseline` COMPLETE — reuse cache (không đo lại), train 3 seed rồi eval dev (MOT20-03) / test (MOT20-01) với TrackEval pin; fail-fast check TrackEval import chạy trước phần nặng để không mất 3h compute. Anchor@QP30 dev HOTA 45.92 ≈ clean source 45.94 (đường ống HOTA tái lập đúng); test anchor h264 37.16 (clean 41.98 — MOT20-01 khó hơn, HOTA không đơn điệu theo QP nên BD test không dùng được).
+- **Đọc nhanh kết quả** (same-QP, thứ tự QP 30/35/40/45; HOTA âm = hại):
+  - dev h264 `selected`: rate −7.2/−4.7/−3.0/−3.2%, HOTA −1.64/−0.02/+1.43/−0.46 pp; dev h265: rate −7.3/−4.7/−3.7/−2.6%, HOTA −1.28/+0.35/−0.37/+0.33 pp.
+  - test h264 `selected`: rate −12.3/−8.2/−6.6/−4.3%, HOTA +1.19/+0.25/+1.64/−2.21 pp; test h265: rate −11.4/−8.9/−6.3/−3.2%, HOTA −0.87/+1.01/−0.84/−1.86 pp.
+  - Tóm lại: tiết kiệm **3–12% rate ở cùng QP**, HOTA lệch trong **±2.2pp** (đa số ±1.6pp). BD chính thức **không pass** (`worst_qp_gap_ge_minus0_5pp` âm ở mọi arm; canonical BD-rate không ổn định trên đường cong nông/cắt nhau) → chỉ nên trích **same-QP evidence**, đúng mức kỳ vọng cho 1 sequence × 256 frame mỗi split.
+  - `calibrated` = identity **toàn bộ 256 cell** (rate_fallback 0) — xác nhận lại kết luận việc 1 trên domain thứ hai; `forced`/`fixed` = a11 toàn bộ; `selected` trộn chủ yếu a11 (55–81/128) + a0 (8–12) + a5/a6 — controller không khóa cứng một action.
+- **Trạng thái**: results đã commit tại `results/v34-ot-baseline/` (summaries + rows.json.gz + `ot_baseline_analysis.txt`). Biến thể OT sau này chỉ cần stage `baseline` trên cache đã commit.
 
 
 

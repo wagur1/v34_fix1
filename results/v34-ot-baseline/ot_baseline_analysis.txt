@@ -1,0 +1,131 @@
+===== dev summary =====
+clean source tracking (ByteTrack on source dets): HOTA 45.94 | IDF1 64.22 | MOTA 52.02
+-- h264 --
+anchor: HOTA [45.92, 43.39, 39.82, 33.79] at bpp [0.054, 0.03, 0.0177, 0.0104]
+arm                      same_qp_gap_pp (HOTA)    same_qp_rate_%             bd_rate_pct  bd_quality_pp  reliable point_pass
+calibrated_303401        +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    0.00         +0.00          True      False
+calibrated_303402        +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    0.00         +0.00          True      False
+calibrated_303403        +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    0.00         +0.00          True      False
+calibrated_ensemble      +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    0.00         +0.00          True      False
+fixed                    -1.73,-1.05,-0.20,-0.83  -7.28,-5.58,-4.41,-3.56    3.83         -0.46          True      False
+forced_303401            -1.73,-1.05,-0.20,-0.83  -7.28,-5.58,-4.41,-3.56    3.83         -0.46          True      False
+forced_303402            -1.73,-1.05,-0.20,-0.83  -7.28,-5.58,-4.41,-3.56    3.83         -0.46          True      False
+forced_303403            -1.73,-1.05,-0.20,-0.83  -7.28,-5.58,-4.41,-3.56    3.83         -0.46          True      False
+forced_ensemble          -1.73,-1.05,-0.20,-0.83  -7.28,-5.58,-4.41,-3.56    3.83         -0.46          True      False
+selected_303401          -1.64,-0.02,+1.43,-0.46  -7.18,-4.69,-3.03,-3.22    27.92        +0.53          True      False
+selected_303402          -1.07,+0.02,+1.16,-0.45  -6.96,-4.17,-2.52,-2.66    -3.25        +0.48          True      False
+selected_303403          -1.64,-0.02,+1.43,-0.46  -7.18,-4.69,-3.03,-3.22    27.92        +0.53          True      False
+selected_ensemble        -1.64,-0.02,+1.43,-0.46  -7.18,-4.69,-3.03,-3.22    27.92        +0.53          True      False
+
+-- h265 --
+anchor: HOTA [45.23, 41.45, 37.63, 27.84] at bpp [0.0459, 0.0236, 0.0129, 0.0072]
+arm                      same_qp_gap_pp (HOTA)    same_qp_rate_%             bd_rate_pct  bd_quality_pp  reliable point_pass
+calibrated_303401        +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    0.00         +0.00          True      False
+calibrated_303402        +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    0.00         +0.00          True      False
+calibrated_303403        +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    0.00         +0.00          True      False
+calibrated_ensemble      +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    0.00         +0.00          True      False
+fixed                    -1.24,+1.02,-0.26,-1.00  -8.60,-6.69,-5.21,-3.89    27.66        +0.59          True      False
+forced_303401            -1.24,+1.02,-0.26,-1.00  -8.60,-6.69,-5.21,-3.89    27.66        +0.59          True      False
+forced_303402            -1.24,+1.02,-0.26,-1.00  -8.60,-6.69,-5.21,-3.89    27.66        +0.59          True      False
+forced_303403            -1.24,+1.02,-0.26,-1.00  -8.60,-6.69,-5.21,-3.89    27.66        +0.59          True      False
+forced_ensemble          -1.24,+1.02,-0.26,-1.00  -8.60,-6.69,-5.21,-3.89    27.66        +0.59          True      False
+selected_303401          -1.28,+0.35,-0.37,+0.33  -7.31,-4.65,-3.68,-2.57    10.40        +0.26          True      False
+selected_303402          -1.28,+0.35,-0.42,+0.09  -7.31,-4.65,-3.68,-2.56    11.34        +0.22          True      False
+selected_303403          -1.54,+0.35,-0.42,+0.09  -6.69,-4.65,-3.68,-2.56    15.81        +0.18          True      False
+selected_ensemble        -1.28,+0.35,-0.42,+0.09  -7.31,-4.65,-3.68,-2.56    11.34        +0.22          True      False
+
+===== dev selections =====
+rows: 1792 (1792 ot) | arms: 14 | windows: 16
+[h264] selected_303401 actions: {0: 6, 5: 2, 6: 16, 11: 40}
+[h264] calibrated_303401 rate_fallback: 0/64
+[h264] selected_303402 actions: {0: 7, 1: 2, 3: 1, 5: 10, 9: 1, 11: 43}
+[h264] calibrated_303402 rate_fallback: 0/64
+[h264] selected_303403 actions: {0: 6, 5: 2, 6: 16, 11: 40}
+[h264] calibrated_303403 rate_fallback: 0/64
+[h264] selected_ensemble actions: {0: 6, 5: 2, 6: 16, 11: 40}
+[h264] calibrated_ensemble rate_fallback: 0/64
+[h265] selected_303401 actions: {0: 6, 1: 2, 5: 12, 9: 3, 11: 41}
+[h265] calibrated_303401 rate_fallback: 0/64
+[h265] selected_303402 actions: {0: 8, 5: 12, 9: 3, 11: 41}
+[h265] calibrated_303402 rate_fallback: 0/64
+[h265] selected_303403 actions: {0: 8, 1: 4, 5: 8, 9: 3, 11: 41}
+[h265] calibrated_303403 rate_fallback: 0/64
+[h265] selected_ensemble actions: {0: 8, 5: 12, 9: 3, 11: 41}
+[h265] calibrated_ensemble rate_fallback: 0/64
+fixed                  identity 0/128 actions: {11: 128}
+selected_303401        identity 12/128 actions: {0: 12, 1: 2, 5: 14, 6: 16, 9: 3, 11: 81}
+forced_303401          identity 0/128 actions: {11: 128}
+calibrated_303401      identity 128/128 actions: {0: 128}
+tried_actions per selected row: mean 6.00 min 6 max 6
+===== test summary =====
+clean source tracking (ByteTrack on source dets): HOTA 41.98 | IDF1 50.65 | MOTA 42.15
+-- h264 --
+anchor: HOTA [37.16, 37.51, 32.53, 28.57] at bpp [0.0605, 0.0342, 0.0206, 0.0125]
+arm                      same_qp_gap_pp (HOTA)    same_qp_rate_%             bd_rate_pct  bd_quality_pp  reliable point_pass
+calibrated_303401        +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    n/a          n/a            False     False
+calibrated_303402        +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    n/a          n/a            False     False
+calibrated_303403        +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    n/a          n/a            False     False
+calibrated_ensemble      +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    n/a          n/a            False     False
+fixed                    +0.31,+1.05,+0.81,-1.58  -11.29,-8.87,-7.24,-5.60   n/a          n/a            False     False
+forced_303401            +0.31,+1.05,+0.81,-1.58  -11.29,-8.87,-7.24,-5.60   n/a          n/a            False     False
+forced_303402            +0.31,+1.05,+0.81,-1.58  -11.29,-8.87,-7.24,-5.60   n/a          n/a            False     False
+forced_303403            +0.31,+1.05,+0.81,-1.58  -11.29,-8.87,-7.24,-5.60   n/a          n/a            False     False
+forced_ensemble          +0.31,+1.05,+0.81,-1.58  -11.29,-8.87,-7.24,-5.60   n/a          n/a            False     False
+selected_303401          +1.19,+0.25,+1.64,-2.21  -12.25,-8.17,-6.58,-4.32   n/a          n/a            False     False
+selected_303402          +1.30,+0.85,+0.52,-1.67  -9.54,-7.21,-5.68,-3.92    n/a          n/a            False     False
+selected_303403          +1.19,+0.75,+1.90,-2.21  -12.25,-7.56,-6.41,-4.32   n/a          n/a            False     False
+selected_ensemble        +1.19,+0.75,+1.90,-2.21  -12.25,-7.56,-6.41,-4.32   n/a          n/a            False     False
+
+-- h265 --
+anchor: HOTA [37.57, 35.25, 32.79, 24.73] at bpp [0.0543, 0.0297, 0.0174, 0.01]
+arm                      same_qp_gap_pp (HOTA)    same_qp_rate_%             bd_rate_pct  bd_quality_pp  reliable point_pass
+calibrated_303401        +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    0.00         +0.00          True      False
+calibrated_303402        +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    0.00         +0.00          True      False
+calibrated_303403        +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    0.00         +0.00          True      False
+calibrated_ensemble      +0.00,+0.00,+0.00,+0.00  +0.00,+0.00,+0.00,+0.00    0.00         +0.00          True      False
+fixed                    -0.81,+1.29,-1.14,-1.30  -12.12,-9.67,-8.06,-6.10   490.64       +0.52          True      False
+forced_303401            -0.81,+1.29,-1.14,-1.30  -12.12,-9.67,-8.06,-6.10   490.64       +0.52          True      False
+forced_303402            -0.81,+1.29,-1.14,-1.30  -12.12,-9.67,-8.06,-6.10   490.64       +0.52          True      False
+forced_303403            -0.81,+1.29,-1.14,-1.30  -12.12,-9.67,-8.06,-6.10   490.64       +0.52          True      False
+forced_ensemble          -0.81,+1.29,-1.14,-1.30  -12.12,-9.67,-8.06,-6.10   490.64       +0.52          True      False
+selected_303401          -0.87,+1.01,-0.84,-1.86  -11.36,-8.90,-6.34,-3.24   240.93       +0.28          True      False
+selected_303402          -0.32,+1.01,-0.84,-0.30  -11.78,-8.90,-6.24,-3.07   29.65        +0.52          True      False
+selected_303403          -0.70,+1.01,-0.84,-0.30  -10.27,-8.90,-6.24,-3.07   70.50        +0.47          True      False
+selected_ensemble        -0.87,+1.01,-0.84,-0.30  -11.36,-8.90,-6.24,-3.07   118.67       +0.44          True      False
+
+===== test selections =====
+rows: 1792 (1792 ot) | arms: 14 | windows: 16
+[h264] selected_303401 actions: {0: 4, 1: 2, 3: 4, 5: 3, 6: 36, 11: 15}
+[h264] calibrated_303401 rate_fallback: 0/64
+[h264] selected_303402 actions: {0: 2, 1: 2, 3: 6, 5: 9, 9: 9, 11: 36}
+[h264] calibrated_303402 rate_fallback: 0/64
+[h264] selected_303403 actions: {0: 4, 1: 6, 5: 3, 6: 36, 11: 15}
+[h264] calibrated_303403 rate_fallback: 0/64
+[h264] selected_ensemble actions: {0: 4, 1: 6, 5: 3, 6: 36, 11: 15}
+[h264] calibrated_ensemble rate_fallback: 0/64
+[h265] selected_303401 actions: {0: 4, 1: 5, 5: 14, 9: 1, 11: 40}
+[h265] calibrated_303401 rate_fallback: 0/64
+[h265] selected_303402 actions: {0: 5, 5: 13, 6: 3, 7: 1, 9: 1, 10: 3, 11: 38}
+[h265] calibrated_303402 rate_fallback: 0/64
+[h265] selected_303403 actions: {0: 5, 5: 10, 7: 1, 9: 5, 10: 3, 11: 40}
+[h265] calibrated_303403 rate_fallback: 0/64
+[h265] selected_ensemble actions: {0: 5, 5: 14, 7: 1, 9: 1, 10: 3, 11: 40}
+[h265] calibrated_ensemble rate_fallback: 0/64
+fixed                  identity 0/128 actions: {11: 128}
+selected_303401        identity 8/128 actions: {0: 8, 1: 7, 3: 4, 5: 17, 6: 36, 9: 1, 11: 55}
+forced_303401          identity 0/128 actions: {11: 128}
+calibrated_303401      identity 128/128 actions: {0: 128}
+tried_actions per selected row: mean 6.00 min 6 max 6
+===== complete =====
+{
+ "status": "complete",
+ "experiment": "ar_ot",
+ "stage": "baseline",
+ "cache_sha256": "eed5ea6b05ce26c33742450e7070d81b983bdfbf57eef3b9ff64f8b6d0dfd42a",
+ "checkpoint_sha256": [
+  "b1ef9af5c81982b593d86d16ebda616b28deb17933b891ab9f24a7be5a88f82e",
+  "187ee1b6b3dbd860ac5396130324aa6b9dff4bcfd6ab2d15460fe7820ef9a993",
+  "054cef8a24b6f12a42b49d30710ecae5a42259a62d12057e18222afa77445fb4"
+ ],
+ "scope": "dedicated MOT20 OT pass: MOT20-02 windows train/cal, MOT20-03 dev, MOT20-01 test; HOTA via pinned TrackEval"
+}
