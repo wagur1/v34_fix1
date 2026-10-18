@@ -1,0 +1,50 @@
+v34_ot_mot20 measurement cache analysis
+cache sha256: eed5ea6b05ce26c33742450e7070d81b983bdfbf57eef3b9ff64f8b6d0dfd42a
+windows: 16 | rows: 128 | experiment: ar_ot
+rows by split: {'train': 96, 'cal': 32} | grid: 8 codec/QP cells x 13 actions
+identity anchor ok (rate==1, zero ot damage): True
+
+Damage is the local tracking surrogate (window misses + FP + 2x switches) as a fraction
+of the identity cost of the same window (Fix2 relative units). Budget ratio <= 1.01.
+== h264 ==  rows=64
+action  rate(mean)  abs_damage(mean)  rel(mean)  rel(p50)  rel(p90)  rel(max)
+a0        1.0000          0.00000    0.0000   0.0000   0.0000   0.0000
+a1        0.9880          0.00188    0.0043   0.0037   0.0726   0.1705
+a2        0.9763          0.00523    0.0086   0.0106   0.0687   0.2134
+a3        0.9676          0.00265    0.0053   0.0019   0.0713   0.2008
+a4        0.9537         -0.00091    0.0000  -0.0002   0.0619   0.2657
+a5        0.9589          0.00248    0.0056   0.0019   0.0812   0.1485
+a6        0.9342          0.01065    0.0163   0.0184   0.0983   0.1240
+a7        0.9942         -0.00120    0.0004  -0.0043   0.0797   0.1512
+a8        1.0127          0.00117    0.0029   0.0010   0.0748   0.2155
+a9        0.9870          0.00191    0.0044  -0.0030   0.0780   0.1628
+a10       0.9996         -0.00439   -0.0060  -0.0037   0.0457   0.1757
+a11       0.9283          0.01029    0.0156   0.0217   0.0892   0.1590
+a12       1.0164          0.00784    0.0124   0.0124   0.0756   0.1434
+
+== h265 ==  rows=64
+action  rate(mean)  abs_damage(mean)  rel(mean)  rel(p50)  rel(p90)  rel(max)
+a0        1.0000          0.00000    0.0000   0.0000   0.0000   0.0000
+a1        0.9883         -0.00021    0.0015  -0.0028   0.0577   0.2906
+a2        0.9775         -0.00084    0.0004  -0.0018   0.0747   0.2635
+a3        0.9677         -0.00176   -0.0010  -0.0035   0.0647   0.2104
+a4        0.9536         -0.00273   -0.0020   0.0040   0.0670   0.1847
+a5        0.9578         -0.00093   -0.0002   0.0000   0.0711   0.2842
+a6        0.9300         -0.00063    0.0007   0.0000   0.0838   0.2241
+a7        0.9973         -0.00224   -0.0012  -0.0018   0.0652   0.1448
+a8        1.0194         -0.00719   -0.0080  -0.0095   0.0604   0.2291
+a9        0.9884          0.00271    0.0058   0.0136   0.0614   0.2709
+a10       1.0016         -0.00290   -0.0019   0.0044   0.0671   0.1586
+a11       0.9203          0.01005    0.0143   0.0159   0.0933   0.1831
+a12       1.0197         -0.00251   -0.0000  -0.0083   0.0757   0.2350
+
+-- best-rate action among rel damage <= 5% (row counts, all codecs) --
+{'a0': 1, 'a2': 1, 'a3': 1, 'a4': 9, 'a5': 2, 'a6': 27, 'a7': 1, 'a11': 86}
+Read: for most windows no non-identity action stays under 5% relative damage while
+saving rate (a0=identity wins 107/128); where a trade exists the rank is a11 > a6 > a4.
+
+-- rate-min action among zero measured damage (row counts) --
+{'a0': 107, 'a1': 2, 'a2': 2, 'a3': 3, 'a4': 2, 'a5': 5, 'a6': 3, 'a7': 1, 'a9': 1, 'a10': 1, 'a11': 1}
+
+Companion artifacts: caches/v34_ot_mot20/measurements.json (this cache),
+controller_inputs.pth (48x48 controller inputs), provenance.json (dataset/kernel sha).

@@ -1,0 +1,34 @@
+{
+  "dataset": "ismailelbouknify/mot-20",
+  "repo_commit": "31f5b87",
+  "sequences": {
+    "MOT20-02": {
+      "frames": 256,
+      "full_frames": 2782,
+      "width": 1920,
+      "height": 1080,
+      "seqinfo_sha256": "e94c47840038e71e84613eeda0a9635728de1e488b56c5b05b16f68ff7305a44",
+      "frames_sha256": "04aec0472942249c9eca1c687ea4abf3277ec3e71cf9c116973d3a95b352ec4e",
+      "gt_sha256": "10abe457a67d9919a9cbfe821d3619c8e6174c2b0ed7ecf4cb68c1fd6cad58de"
+    },
+    "MOT20-03": {
+      "frames": 256,
+      "full_frames": 2405,
+      "width": 1173,
+      "height": 880,
+      "seqinfo_sha256": "fb62095bce77a2e422e258d76266d767c7ea04816e8462f631b9b65ec2a64b5e",
+      "frames_sha256": "2c44ad5ef63b392bb0f73358123e5fa89d93faa76dd728559e202c598ffa5483",
+      "gt_sha256": null
+    },
+    "MOT20-01": {
+      "frames": 256,
+      "full_frames": 429,
+      "width": 1920,
+      "height": 1080,
+      "seqinfo_sha256": "5850098d845d1a92c4b8649ee7ab4e2b7ef2b0a2104eb855cdef9a8e93da0a5e",
+      "frames_sha256": "06b5bead9c1b5fcd96330f1b1d43b1dc5af19cabbd2abfc519bce8963774407b",
+      "gt_sha256": null
+    }
+  },
+  "scope": "measurement/selection inputs only; held-out GT staged separately at scoring time"
+}

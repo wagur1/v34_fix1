@@ -1,0 +1,86 @@
+{
+  "scope": "v34_ot_mot20: dedicated MOT20 measurement cache for the arot-r1 recipe (MOT20-02 256-frame windows -> train/cal clips; MOT20-03 dev and MOT20-01 test are measured only during held-out evaluation)",
+  "cohorts": {
+    "train_windows": 12,
+    "cal_windows": 4,
+    "dev_windows": 16,
+    "test_windows": 16,
+    "frames_per_clip": 16,
+    "ot_size": 960,
+    "ot_frames": 256,
+    "rows_by_split": {
+      "train": 96,
+      "cal": 32
+    },
+    "rows_total": 128
+  },
+  "cache": {
+    "sha256": "eed5ea6b05ce26c33742450e7070d81b983bdfbf57eef3b9ff64f8b6d0dfd42a",
+    "rows": 128,
+    "windows": 16,
+    "grid": "13 actions x 2 codecs x 4 QPs per window"
+  },
+  "kernel": {
+    "account": "vtk269",
+    "slug": "v34-ot-measure",
+    "url": "https://www.kaggle.com/code/vtk269/v34-ot-measure",
+    "status": "COMPLETE",
+    "job_seconds": 8498.7,
+    "measure_seconds": 8242.2,
+    "seconds_per_window": [
+      502.3,
+      517.2,
+      516.0,
+      516.5,
+      517.7,
+      514.8,
+      516.2,
+      514.7,
+      513.7,
+      516.0,
+      514.3,
+      513.8,
+      515.4,
+      519.6,
+      516.2,
+      517.7
+    ],
+    "device": "cuda (Kaggle NvidiaTeslaT4)"
+  },
+  "hedge_replica": {
+    "account": "linhowi05",
+    "cache_sha256": "06b971236e8cadd514e4fd3b760245113e8418d1ae60d826dd09f541682c07bd",
+    "note": "independent rerun completed on 2026-10-18; only wall-clock timing fields differ, all measured content identical"
+  },
+  "dataset": "ismailelbouknify/mot-20",
+  "repo_commit": "31f5b87",
+  "sequences": {
+    "MOT20-02": {
+      "frames": 256,
+      "full_frames": 2782,
+      "width": 1920,
+      "height": 1080,
+      "seqinfo_sha256": "e94c47840038e71e84613eeda0a9635728de1e488b56c5b05b16f68ff7305a44",
+      "frames_sha256": "04aec0472942249c9eca1c687ea4abf3277ec3e71cf9c116973d3a95b352ec4e",
+      "gt_sha256": "10abe457a67d9919a9cbfe821d3619c8e6174c2b0ed7ecf4cb68c1fd6cad58de"
+    },
+    "MOT20-03": {
+      "frames": 256,
+      "full_frames": 2405,
+      "width": 1173,
+      "height": 880,
+      "seqinfo_sha256": "fb62095bce77a2e422e258d76266d767c7ea04816e8462f631b9b65ec2a64b5e",
+      "frames_sha256": "2c44ad5ef63b392bb0f73358123e5fa89d93faa76dd728559e202c598ffa5483",
+      "gt_sha256": null
+    },
+    "MOT20-01": {
+      "frames": 256,
+      "full_frames": 429,
+      "width": 1920,
+      "height": 1080,
+      "seqinfo_sha256": "5850098d845d1a92c4b8649ee7ab4e2b7ef2b0a2104eb855cdef9a8e93da0a5e",
+      "frames_sha256": "06b5bead9c1b5fcd96330f1b1d43b1dc5af19cabbd2abfc519bce8963774407b",
+      "gt_sha256": null
+    }
+  }
+}
